@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [ -f "$2" ]; then \
+	rm "$2" ;\
+fi
+
+touch "$2"\
+
+./a.out "$1" "$2" > "$2"
