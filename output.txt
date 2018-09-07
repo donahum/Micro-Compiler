@@ -1,0 +1,19 @@
+Commit ID tagged for submission: 68cc2aab35f2ea6b3828267df9c83daf6ddf5585
+Submission graded at: 2018-09-07 13:58:23
+
+mkdir -p generated
+mkdir -p build
+flex -o generated/scanner.cpp src/scanner.ll
+bison -d -o generated/parser.cpp src/parser.yy
+g++ -std=c++0x -c -o build/parser.o generated/parser.cpp
+g++ -std=c++0x -c -o build/scanner.o generated/scanner.cpp
+g++ -std=c++0x -c -o build/main.o src/main.cpp
+g++ -std=c++0x -o Micro build/scanner.o build/parser.o build/main.o 
+Testing.....fibonacci.micro
+Test Passed
+Testing.....loop.micro
+Test Passed
+Testing.....nested.micro
+Test Passed
+Testing.....sqrt.micro
+Test Passed
