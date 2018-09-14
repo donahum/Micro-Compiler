@@ -12,10 +12,20 @@ compiler:
 	bison -d -o generated/parser.cpp src/parser.yy
 	g++ -std=c++0x -c -o build/parser.o generated/parser.cpp
 	g++ -std=c++0x -c -o build/scanner.o generated/scanner.cpp
-	g++ -std=c++0x -c -o build/main.o src/main.cpp
+	g++ -std=c++0x -c -o build/main.o src/parse_main.cpp
 	g++ -std=c++0x -o Micro build/scanner.o build/parser.o build/main.o 
+
+scanner:
+	mkdir -p generated
+	mkdir -p build
+	flex -o generated/scanner.cpp src/scanner.ll
+	bison -d -o generated/parser.cpp src/parser.yy
+	g++ -std=c++0x -c -o build/scanner.o generated/scanner.cpp
+	g++ -std=c++0x -c -o build/main.o src/scan_main.cpp
+	g++ -std=c++0x -o Scanner build/scanner.o build/main.o 
 
 clean:
 	@rm -rf generated
 	@rm -rf build
 	@rm -f Micro
+	@rm -f Scanner

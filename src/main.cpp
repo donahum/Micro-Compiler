@@ -12,7 +12,7 @@ int main(int argc, char **argv){
 
     int TOKEN = yylex();
     while(TOKEN != 0){
-        std::cout<<"Token Type: ";
+        //std::cout<<"Token Type: ";
         switch(TOKEN){
             case    _PROGRAM:
             case    _BEGIN:
@@ -36,19 +36,19 @@ int main(int argc, char **argv){
             case    _ENDFOR:
             case    _CONTINUE:
             case    _BREAK:
-                std::cout<<"KEYWORD";
+                //std::cout<<"KEYWORD";
                 break;
             case    _IDENTIFIER:
-                std::cout<<"IDENTIFIER";
+                //std::cout<<"IDENTIFIER";
                 break;
             case    _STRINGLITERAL:
-                std::cout<<"STRINGLITERAL";
+                //std::cout<<"STRINGLITERAL";
                 break;
             case    _FLOATLITERAL:
-                std::cout<<"FLOATLITERAL";
+                //std::cout<<"FLOATLITERAL";
                 break;
             case    _INTLITERAL:
-                std::cout<<"INTLITERAL";
+                //std::cout<<"INTLITERAL";
                 break;
             case    _ASSIGN:
             case    _NEQ:
@@ -65,11 +65,17 @@ int main(int argc, char **argv){
             case    _CPAREN:
             case    _SEMICOLON:
             case    _COMMA:
-                std::cout<<"OPERATOR";
+                //std::cout<<"OPERATOR";
                 break;
         }
-        std::cout<<"\nValue: "<<yytext<<"\n";
+        //std::cout<<"\nValue: "<<yytext<<"\n";
+        if(!yyparse()){
+            printf("Accepted\n");
+        }else{
+            printf("Not Accepted\n");
+        }
         TOKEN = yylex();
     }
+    
     return 0;
 }

@@ -38,11 +38,6 @@ EATUPWHITESPACE     [ \t\r\n]+
 "TRUE"              { return _TRUE; }
 "FALSE"             { return _FALSE; }
 
-"FOR"               { return _FOR; /*573 Only*/}
-"ENDFOR"            { return _ENDFOR; /*573 Only*/}
-"CONTINUE"          { return _CONTINUE; /*573 Only*/}
-"BREAK"             { return _BREAK; /*573 Only*/}
-
 {IDENTIFIER}        { return _IDENTIFIER; }
 
 {STRINGLITERAL}     { return _STRINGLITERAL; }
