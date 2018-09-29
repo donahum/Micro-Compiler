@@ -1,0 +1,3 @@
+#!/bin/bash
+
+./Scanner "$1" > "$2"
