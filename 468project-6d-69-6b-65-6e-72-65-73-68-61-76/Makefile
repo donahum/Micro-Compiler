@@ -10,10 +10,12 @@ compiler:
 	mkdir -p build
 	flex -o generated/scanner.cpp src/scanner.ll
 	bison -d -o generated/parser.cpp src/parser.yy
-	g++ -std=c++0x -c -o build/parser.o generated/parser.cpp
-	g++ -std=c++0x -c -o build/scanner.o generated/scanner.cpp
-	g++ -std=c++0x -c -o build/main.o src/parse_main.cpp
-	g++ -std=c++0x -o Micro build/scanner.o build/parser.o build/main.o 
+	g++ -std=c++0x -g -c -o build/parser.o generated/parser.cpp
+	g++ -std=c++0x -g -c -o build/scanner.o generated/scanner.cpp
+	g++ -std=c++0x -g -c -o build/main.o src/parse_main.cpp
+	g++ -std=c++0x -g -c -o build/SymbolTable.o src/SymbolTable.cpp
+	g++ -std=c++0x -g -c -o build/SymbolTableEntry.o src/SymbolTableEntry.cpp
+	g++ -std=c++0x -g -o Micro build/scanner.o build/parser.o build/main.o build/SymbolTable.o build/SymbolTableEntry.o
 
 scanner:
 	mkdir -p generated
@@ -29,3 +31,11 @@ clean:
 	@rm -rf build
 	@rm -f Micro
 	@rm -f Scanner
+	@rm -f Tester
+
+testSTE:
+	g++ -std=c++0x src/SymbolTableEntry.cpp -o Tester
+
+testST:
+	mkdir -p build
+	g++ -std=c++0x -g -o Tester src/SymbolTable.cpp src/SymbolTableEntry.cpp
