@@ -10,6 +10,7 @@ class MulExprNode : public ASTNode
 		std::string mul_op;
 		
 		std::string getOp();
+		void printNode();
 };
 
 #endif

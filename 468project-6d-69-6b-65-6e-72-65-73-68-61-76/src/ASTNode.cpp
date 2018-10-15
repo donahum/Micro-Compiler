@@ -50,7 +50,9 @@
 			std::cout << "MULT_EXPR" << std::endl;
 		}else if(Type == ASTNodeType::VAR_REF){
 			std::cout << "VAR_REF" << std::endl;
-		}else {
+		}else if(Type == ASTNodeType::FUNC){
+			std::cout << "FUNC" << std::endl;
+		}else{
 			std::cout << "LITERAL" << std::endl;
 		}
 	}

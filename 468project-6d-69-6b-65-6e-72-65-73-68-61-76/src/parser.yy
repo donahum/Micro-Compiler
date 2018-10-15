@@ -16,38 +16,16 @@
 %}
 
 %code requires{
-    #ifndef ST_H
-    #define ST_H
+    
     #include "../src/SymbolTable.hpp"
-    #endif
-
-    #ifndef STE_H
-    #define STE_H
     #include "../src/SymbolTableEntry.hpp"
-    #endif
-
-    //#ifndef AST_H
-    //#define AST_H
-    #ifndef AST_H
     #include "../src/ASTNode.hpp"
-    #endif
-
-    #ifndef ADDNODE_H
     #include "../src/AddExprNode.hpp"
-    #endif
-
-    #ifndef MULNODE_H
     #include "../src/MulExprNode.hpp"
-    #endif
-
-    #ifndef VARNODE_H
     #include "../src/VarRefNode.hpp"
-    #endif
-
-    #ifndef LITERALNODE_H
     #include "../src/LiteralNode.hpp"
-    #endif
-
+    #include "../src/FuncNode.hpp"
+    #include "../src/AssignNode.hpp"
 }
 
 %token _PROGRAM _BEGIN _END _FUNCTION _READ _WRITE _IF _ELSE _ENDIF _WHILE _ENDWHILE _RETURN    
@@ -57,16 +35,18 @@
 %token <s> _IDENTIFIER _STRINGLITERAL _FLOATLITERAL _INTLITERAL _INT _VOID _STRING _FLOAT  _MUL _DIV _PLUS _MINUS
 
 %type <s> id str var_type any_type
-%type <node> expr_prefix factor factor_prefix postfix_expr expr primary expr_list expr_list_tail call_expr func_decl
+%type <node> expr_prefix factor factor_prefix postfix_expr expr primary expr_list expr_list_tail call_expr
 %type <add_node> addop 
 %type <mul_node> mulop 
 //%type <var_node> primary
 //%type <lit_node> primary
+%type <assign_node>  assign_expr
 
 %type <s_table> var_decl 
-%type <str_list> id_list id_tail
-%type <node> if_stmt stmt else_part loop_stmt while_stmt base_stmt assign_stmt read_stmt write_stmt control_stmt assign_expr return_stmt
-%type<astlist> stmt_list func_body func_declarations pgm_body
+%type <str_list> id_list id_tail      
+%type <ast_list> stmt_list func_body func_declarations pgm_body if_stmt stmt base_stmt loop_stmt read_stmt write_stmt control_stmt return_stmt assign_stmt else_part while_stmt
+%type <func_node> func_decl
+
 %union{
   SymbolTableEntry * s_entry;
   char * s;
@@ -78,7 +58,9 @@
   MulExprNode * mul_node;
   VarRefNode * var_node;
   LiteralNode * lit_node;
-  std::vector<ASTNode*>* astlist;
+  FuncNode * func_node;
+  AssignNode * assign_node;
+  std::vector<ASTNode*> * ast_list;
 }
 
 %{
@@ -96,7 +78,7 @@ program           : _PROGRAM id _BEGIN
                     ststack.push(global);
                   } pgm_body _END {
                                                         for(int i = $5->size() - 1; i >= 0; i--){
-                                                          (*$5)[i]->TOIR();
+                                                          //(*$5)[i]->TOIR();
                                                         }
                                                      };
 id                : _IDENTIFIER { $$ = $1; 
@@ -118,7 +100,7 @@ string_decl       : _STRING id _ASSIGN str _SEMICOLON {
                                                         //printf("Name: %s\n", $2);
                                                         //printf("Value: %s\n", $4);
                                                         SymbolTableEntry* tmp = new SymbolTableEntry($2, $1, $4);
-                                                        ststack.top().addEntry(tmp);
+                                                        ststack.top()->addEntry(tmp);
                                                         //$$->printSTE();
                                                         //std::cout << std::endl;
                                                       };
@@ -132,7 +114,7 @@ var_decl          : var_type id_list _SEMICOLON {
                                                   {
                                                       char * varName = $2->at(i);
                                                       SymbolTableEntry * varEntry = new SymbolTableEntry(varName, $1);
-                                                      ststack.top().addEntry(varEntry);
+                                                      ststack.top()->addEntry(varEntry);
                                                   };
                                                 };  
 
@@ -185,7 +167,7 @@ param_decl_tail   : _COMMA param_decl param_decl_tail
                     | %empty;
 
 /* Function Declarations */
-func_declarations : func_decl func_declarations { //std::cout << "func_declarations" << std::endl;
+func_declarations : func_decl func_declarations {
                                                   $$ = $2;
                                                   $$->push_back($1);
                                                 };  
@@ -194,23 +176,28 @@ func_declarations : func_decl func_declarations { //std::cout << "func_declarati
                               };
 
 func_decl         : _FUNCTION any_type id _OPAREN {
-                                                    SymbolTable* tmp = new SymbolTable(*$3, ststack.top());
+                                                    SymbolTable* tmp = new SymbolTable($3, ststack.top());
                                                     ststack.top()->children.push_back(tmp);
                                                     ststack.push(tmp);
                                                   } param_decl_list _CPAREN _BEGIN func_body _END   
                                                   {
-                                                    $$ = new FuncNode(*$3, $9, ststack.top());
+                                                    $$ = new FuncNode($3, $9, ststack.top(), ASTNodeType::FUNC);
                                                     ststack.pop();
                                                   };
 
-func_body         : decl stmt_list  {0
+func_body         : decl stmt_list  {
                                       $$= $2;
                                     };
 
 /* Statement List */
 stmt_list         : stmt stmt_list  {   
-                                        $$ = $1;
-                                        $$->push_back($1);
+                                        $$ = $2;
+                                        for(std::vector<int>::size_type i = 0; i != $$->size(); ++i)
+                                        {
+                                            //std::cout << $$->at(i);
+                                            $$->push_back($1->at(i));
+                                        };
+                                        //$$->push_back($1);
                                       }
                     | %empty  {
                                   $$ = new std::vector<ASTNode*>;
@@ -226,13 +213,20 @@ stmt              : base_stmt   {$$ = $1;}
                                     $$ = $1;
                                     //std::cout << "loop_stmt\n";
                                 };
-base_stmt         : assign_stmt {$$ = $1;} | read_stmt {$$ = $1;}| write_stmt {$$ = $1;}| control_stmt{$$ = $1;};
+base_stmt         : assign_stmt {
+                                    $$ = $1;
+                                } 
+                    | read_stmt {$$ = $1;}| write_stmt {$$ = $1;}| control_stmt{$$ = $1;};
 
 /* Basic Statements */
-assign_stmt       : assign_expr _SEMICOLON {$$ = $1;};
+assign_stmt       : assign_expr _SEMICOLON  {
+                                              std::vector<ASTNode *> * tmpVec(0);
+                                              tmpVec->push_back($1);
+                                              $$ = tmpVec;
+                                            };
 assign_expr       : id _ASSIGN expr {
-                                      VarRefNode* vid = new VarRefNode(*$1,ASTNodeType::VAR_REF);
-                                      $$ = new AssignNode(vid, $3);
+                                      VarRefNode* vid = new VarRefNode($1,ASTNodeType::VAR_REF);
+                                      $$ = new AssignNode(vid, $3, ASTNodeType::ASSIGN);
                                     };
 read_stmt         : _READ _OPAREN id_list _CPAREN _SEMICOLON{$$ = NULL;};
 write_stmt        : _WRITE _OPAREN id_list _CPAREN _SEMICOLON{$$ = NULL;};

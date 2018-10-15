@@ -1,7 +1,4 @@
-#ifndef STE_H
-#define STE_H
 #include "SymbolTableEntry.hpp"
-#endif
 
 SymbolTableEntry::SymbolTableEntry()
 {

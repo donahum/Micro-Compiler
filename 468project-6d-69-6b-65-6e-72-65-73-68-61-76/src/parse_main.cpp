@@ -6,15 +6,8 @@ extern char * yytext;
 extern FILE * yyin;
 extern std::vector<SymbolTable *> tableVector;
 
-#ifndef ST_H
-#define ST_H
 #include "SymbolTable.hpp"
-#endif
-
-#ifndef STE_H
-#define STE_H
 #include "SymbolTableEntry.hpp"
-#endif
 
 int main(int argc, char **argv){
     if ( argc > 1 ){
@@ -24,7 +17,7 @@ int main(int argc, char **argv){
         yyin = stdin;
     }
     yyparse();
-    int error = 0;
+    /*int error = 0;
     const char * errorID = "";
     for(std::vector<int>::size_type i = 0; i != tableVector.size(); ++i)
     {
@@ -51,7 +44,7 @@ int main(int argc, char **argv){
         }
     }
 
-    /*if(!error){
+    if(!error){
         for(std::vector<int>::size_type i = 0; i != tableVector.size(); ++i)
         {
             if(i != 0){
@@ -63,10 +56,10 @@ int main(int argc, char **argv){
         }
     }*/
 
-    if(error){
+    /*if(error){
         PrintError:
             printf("DECLARATION ERROR %s\n", errorID);
-    }   
+    }   */
     /*if(!yyparse()){
         printf("Accepted\n");
     }else{

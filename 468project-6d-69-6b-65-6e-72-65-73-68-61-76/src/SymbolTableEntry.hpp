@@ -1,3 +1,6 @@
+#ifndef STE_H
+#define STE_H
+
 #include <iostream>
 #include <vector>
 
@@ -32,3 +35,5 @@ class SymbolTableEntry
 		
 		//friend class SymbolTable;
 };
+
+#endif

@@ -1,12 +1,11 @@
-#ifndef STE_H
-#define STE_H
-#include "SymbolTableEntry.hpp"
-#endif
-
-//#include "SymbolTableEntry.hpp"
+#ifndef ST_H
+#define ST_H
 
 #include <iostream>
 #include <vector>
+#include <map>
+
+#include "SymbolTableEntry.hpp"
 
 class SymbolTable
 {
@@ -22,5 +21,6 @@ class SymbolTable
 		void printST();
 		
 	private:
-		std::string scope;	//global, func x, block x, etc
 };
+
+#endif

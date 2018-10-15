@@ -1,7 +1,8 @@
 //#include <iostream>
 //#include <vector>
 
-#pragma once
+#ifndef AST_H
+#define AST_H
 
 #include <string>
 #include <iostream>
@@ -12,7 +13,9 @@ enum class ASTNodeType
 	ADD_EXPR,
 	MULT_EXPR,
 	VAR_REF,
-	LITERAL
+	LITERAL,
+	FUNC,
+	ASSIGN
 };
 
 class ASTNode
@@ -31,10 +34,10 @@ class ASTNode
 		void printTree(ASTNode * head);
 		void printNode();
 		void printNodeType();
-		virtual std::string TOIR() = 0;
+		//virtual std::string TOIR() = 0;
 		
 	private:
 		
 };
 
-//#endif
+#endif

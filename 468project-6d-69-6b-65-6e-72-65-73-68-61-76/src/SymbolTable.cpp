@@ -1,13 +1,5 @@
-#ifndef ST_H
-#define ST_H
 #include "SymbolTable.hpp"
-#endif
-
-#ifndef STE_H
-#define STE_H
-#include "SymbolTableEntry.hpp"
-#endif
-
+//#include "SymbolTableEntry.hpp"
 
 void SymbolTable::addEntry(SymbolTableEntry * newEntry)
 {
@@ -15,7 +7,8 @@ void SymbolTable::addEntry(SymbolTableEntry * newEntry)
 		std::cout<<"DECLARATION ERROR\n"<<newEntry->name<<"\n";
 		exit(0);
 	}
-	table.insert(newEntry->name, newEntry);
+	//table.insert(newEntry->name, newEntry);
+	table.insert(std::pair<std::string, SymbolTableEntry *>(newEntry->name, newEntry));
 	ordered_table.push_back(newEntry);
 }
 

@@ -20,7 +20,9 @@ compiler:
 	g++ -std=c++0x -g -c -o build/MulExprNode.o src/MulExprNode.cpp
 	g++ -std=c++0x -g -c -o build/VarRefNode.o src/VarRefNode.cpp
 	g++ -std=c++0x -g -c -o build/LiteralNode.o src/LiteralNode.cpp
-	g++ -std=c++0x -g -o Micro build/scanner.o build/parser.o build/main.o build/SymbolTable.o build/SymbolTableEntry.o build/ASTNode.o build/AddExprNode.o build/MulExprNode.o build/VarRefNode.o build/LiteralNode.o
+	g++ -std=c++0x -g -c -o build/AssignNode.o src/AssignNode.cpp
+	g++ -std=c++0x -g -c -o build/FuncNode.o src/FuncNode.cpp
+	g++ -std=c++0x -g -o Micro build/scanner.o build/parser.o build/main.o build/SymbolTable.o build/SymbolTableEntry.o build/ASTNode.o build/AddExprNode.o build/MulExprNode.o build/VarRefNode.o build/LiteralNode.o build/AssignNode.o build/FuncNode.o
 
 scanner:
 	mkdir -p generated

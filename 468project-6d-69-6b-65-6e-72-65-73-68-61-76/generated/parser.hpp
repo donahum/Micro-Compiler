@@ -42,40 +42,18 @@ extern int yydebug;
 /* "%code requires" blocks.  */
 #line 18 "src/parser.yy" /* yacc.c:1909  */
 
-    #ifndef ST_H
-    #define ST_H
+    
     #include "../src/SymbolTable.hpp"
-    #endif
-
-    #ifndef STE_H
-    #define STE_H
     #include "../src/SymbolTableEntry.hpp"
-    #endif
-
-    //#ifndef AST_H
-    //#define AST_H
-    #ifndef AST_H
     #include "../src/ASTNode.hpp"
-    #endif
-
-    #ifndef ADDNODE_H
     #include "../src/AddExprNode.hpp"
-    #endif
-
-    #ifndef MULNODE_H
     #include "../src/MulExprNode.hpp"
-    #endif
-
-    #ifndef VARNODE_H
     #include "../src/VarRefNode.hpp"
-    #endif
-
-    #ifndef LITERALNODE_H
     #include "../src/LiteralNode.hpp"
-    #endif
+    #include "../src/FuncNode.hpp"
+    #include "../src/AssignNode.hpp"
 
-
-#line 79 "generated/parser.hpp" /* yacc.c:1909  */
+#line 57 "generated/parser.hpp" /* yacc.c:1909  */
 
 /* Token type.  */
 #ifndef YYTOKENTYPE
@@ -131,7 +109,7 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 70 "src/parser.yy" /* yacc.c:1909  */
+#line 50 "src/parser.yy" /* yacc.c:1909  */
 
   SymbolTableEntry * s_entry;
   char * s;
@@ -143,9 +121,11 @@ union YYSTYPE
   MulExprNode * mul_node;
   VarRefNode * var_node;
   LiteralNode * lit_node;
-  std::vector<ASTNode*>* astlist;
+  FuncNode * func_node;
+  AssignNode * assign_node;
+  std::vector<ASTNode*> * ast_list;
 
-#line 149 "generated/parser.hpp" /* yacc.c:1909  */
+#line 129 "generated/parser.hpp" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;
