@@ -8,74 +8,30 @@
 #include "SymbolTableEntry.hpp"
 #endif
 
-SymbolTable::SymbolTable(std::string sc)
-{
-	scope = sc;
-	vec = std::vector<SymbolTableEntry>();
-}
-
-SymbolTable::SymbolTable(std::string * sc)
-{
-	scope = *sc;
-	vec = std::vector<SymbolTableEntry>();
-}
-
-SymbolTable::SymbolTable()
-{
-	scope = "";
-	vec = std::vector<SymbolTableEntry>();
-}
-
-void SymbolTable::setScope(std::string sc)
-{
-	scope = sc;
-}
 
 void SymbolTable::addEntry(SymbolTableEntry * newEntry)
 {
-	//std::cout << "Adding new entry to symbol table " << scope << "\n";
-	vec.push_back(*newEntry);
-}
-
-void SymbolTable::addEntryToFront(SymbolTableEntry * newEntry)
-{
-	//std::cout << "Adding new entry to symbol table " << scope << "\n";
-	vec.insert(vec.begin(), *newEntry);
-}
-
-void SymbolTable::copyEntriesFromST(SymbolTable * srcTable)
-{
-	for(std::vector<int>::size_type i = 0; i != (srcTable->vec).size(); ++i)
-	{
-		vec.push_back((srcTable->vec).at(i));
+	if(table.find(newEntry->name) != table.end()){
+		std::cout<<"DECLARATION ERROR\n"<<newEntry->name<<"\n";
+		exit(0);
 	}
-}
-
-void SymbolTable::copyEntriesFromSTToFront(SymbolTable * srcTable)
-{
-	for(std::vector<int>::size_type i = 0; i != (srcTable->vec).size(); ++i)
-	{
-		vec.insert(vec.begin(), (srcTable->vec).at(i));
-	}
+	table.insert(newEntry->name, newEntry);
+	ordered_table.push_back(newEntry);
 }
 
 void SymbolTable::printST()
 {
-	std::cout << "Symbol table " << scope << "\n";
+	// std::cout << "Symbol table " << scope << "\n";
 
-	for(std::vector<int>::size_type i = 0; i != vec.size(); ++i)
-	{
-		if(i != 0){
-			std::cout << std::endl;
-		}
-		vec[i].printSTE();
-	}
+	// for(std::vector<int>::size_type i = 0; i != vec.size(); ++i)
+	// {
+	// 	if(i != 0){
+	// 		std::cout << std::endl;
+	// 	}
+	// 	vec[i].printSTE();
+	// }
 }
 
-std::string SymbolTable::getScope()
-{
-	return scope;
-}
 
 /*int main()
 {

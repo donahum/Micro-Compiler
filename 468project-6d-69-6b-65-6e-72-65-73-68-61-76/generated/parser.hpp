@@ -39,6 +39,43 @@
 #if YYDEBUG
 extern int yydebug;
 #endif
+/* "%code requires" blocks.  */
+#line 18 "src/parser.yy" /* yacc.c:1909  */
+
+    #ifndef ST_H
+    #define ST_H
+    #include "../src/SymbolTable.hpp"
+    #endif
+
+    #ifndef STE_H
+    #define STE_H
+    #include "../src/SymbolTableEntry.hpp"
+    #endif
+
+    //#ifndef AST_H
+    //#define AST_H
+    #ifndef AST_H
+    #include "../src/ASTNode.hpp"
+    #endif
+
+    #ifndef ADDNODE_H
+    #include "../src/AddExprNode.hpp"
+    #endif
+
+    #ifndef MULNODE_H
+    #include "../src/MulExprNode.hpp"
+    #endif
+
+    #ifndef VARNODE_H
+    #include "../src/VarRefNode.hpp"
+    #endif
+
+    #ifndef LITERALNODE_H
+    #include "../src/LiteralNode.hpp"
+    #endif
+
+
+#line 79 "generated/parser.hpp" /* yacc.c:1909  */
 
 /* Token type.  */
 #ifndef YYTOKENTYPE
@@ -57,41 +94,61 @@ extern int yydebug;
     _WHILE = 267,
     _ENDWHILE = 268,
     _RETURN = 269,
-    _INT = 270,
-    _VOID = 271,
-    _STRING = 272,
-    _FLOAT = 273,
-    _TRUE = 274,
-    _FALSE = 275,
-    _FOR = 276,
-    _ENDFOR = 277,
-    _CONTINUE = 278,
-    _BREAK = 279,
-    _IDENTIFIER = 280,
-    _STRINGLITERAL = 281,
-    _FLOATLITERAL = 282,
-    _INTLITERAL = 283,
-    _ASSIGN = 284,
-    _NEQ = 285,
-    _LEQ = 286,
-    _GEQ = 287,
-    _PLUS = 288,
-    _MINUS = 289,
-    _MUL = 290,
-    _DIV = 291,
-    _EQ = 292,
-    _LT = 293,
-    _GT = 294,
-    _OPAREN = 295,
-    _CPAREN = 296,
-    _SEMICOLON = 297,
-    _COMMA = 298
+    _TRUE = 270,
+    _FALSE = 271,
+    _FOR = 272,
+    _ENDFOR = 273,
+    _CONTINUE = 274,
+    _BREAK = 275,
+    _ASSIGN = 276,
+    _NEQ = 277,
+    _LEQ = 278,
+    _GEQ = 279,
+    _EQ = 280,
+    _LT = 281,
+    _GT = 282,
+    _OPAREN = 283,
+    _CPAREN = 284,
+    _SEMICOLON = 285,
+    _COMMA = 286,
+    _IDENTIFIER = 287,
+    _STRINGLITERAL = 288,
+    _FLOATLITERAL = 289,
+    _INTLITERAL = 290,
+    _INT = 291,
+    _VOID = 292,
+    _STRING = 293,
+    _FLOAT = 294,
+    _MUL = 295,
+    _DIV = 296,
+    _PLUS = 297,
+    _MINUS = 298
   };
 #endif
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef int YYSTYPE;
+
+union YYSTYPE
+{
+#line 70 "src/parser.yy" /* yacc.c:1909  */
+
+  SymbolTableEntry * s_entry;
+  char * s;
+  SymbolTable * s_table;
+  std::vector<SymbolTable *> * st_list;
+  std::vector<char *> * str_list;
+  ASTNode * node;
+  AddExprNode * add_node;
+  MulExprNode * mul_node;
+  VarRefNode * var_node;
+  LiteralNode * lit_node;
+  std::vector<ASTNode*>* astlist;
+
+#line 149 "generated/parser.hpp" /* yacc.c:1909  */
+};
+
+typedef union YYSTYPE YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
 #endif

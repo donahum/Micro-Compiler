@@ -51,7 +51,7 @@ int main(int argc, char **argv){
         }
     }
 
-    if(!error){
+    /*if(!error){
         for(std::vector<int>::size_type i = 0; i != tableVector.size(); ++i)
         {
             if(i != 0){
@@ -61,7 +61,7 @@ int main(int argc, char **argv){
             std::cout << std::endl;
             std::cout << std::endl;
         }
-    }
+    }*/
 
     if(error){
         PrintError:

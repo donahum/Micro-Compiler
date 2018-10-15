@@ -11,24 +11,15 @@
 class SymbolTable
 {
 	public:
-		std::vector<SymbolTableEntry> vec;
+		std::map<std::string, SymbolTableEntry*> table;
+		std::vector<SymbolTableEntry*> ordered_table;
+		SymbolTable* parent;
+		std::vector<SymbolTable*> children;
+		std::string scope; 
 
-		SymbolTable();
-
-		SymbolTable(std::string sc);
-
-		SymbolTable(std::string * sc);
-
+		SymbolTable(std::string s, SymbolTable* p): scope(s), parent(p){}
 		void addEntry(SymbolTableEntry * newEntry);
-		void addEntryToFront(SymbolTableEntry * newEntry);
-
-		void copyEntriesFromST(SymbolTable * srcTable);
-		void copyEntriesFromSTToFront(SymbolTable * srcTable);
-
 		void printST();
-
-		std::string getScope();
-		void setScope(std::string sc);
 		
 	private:
 		std::string scope;	//global, func x, block x, etc

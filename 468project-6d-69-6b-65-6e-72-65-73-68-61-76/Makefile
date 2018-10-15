@@ -15,7 +15,12 @@ compiler:
 	g++ -std=c++0x -g -c -o build/main.o src/parse_main.cpp
 	g++ -std=c++0x -g -c -o build/SymbolTable.o src/SymbolTable.cpp
 	g++ -std=c++0x -g -c -o build/SymbolTableEntry.o src/SymbolTableEntry.cpp
-	g++ -std=c++0x -g -o Micro build/scanner.o build/parser.o build/main.o build/SymbolTable.o build/SymbolTableEntry.o
+	g++ -std=c++0x -g -c -o build/ASTNode.o src/ASTNode.cpp
+	g++ -std=c++0x -g -c -o build/AddExprNode.o src/AddExprNode.cpp
+	g++ -std=c++0x -g -c -o build/MulExprNode.o src/MulExprNode.cpp
+	g++ -std=c++0x -g -c -o build/VarRefNode.o src/VarRefNode.cpp
+	g++ -std=c++0x -g -c -o build/LiteralNode.o src/LiteralNode.cpp
+	g++ -std=c++0x -g -o Micro build/scanner.o build/parser.o build/main.o build/SymbolTable.o build/SymbolTableEntry.o build/ASTNode.o build/AddExprNode.o build/MulExprNode.o build/VarRefNode.o build/LiteralNode.o
 
 scanner:
 	mkdir -p generated

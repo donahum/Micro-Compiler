@@ -51,10 +51,10 @@ EATUPWHITESPACE     [ \t\r\n]+
 "!="                { return _NEQ; }
 "<="                { return _LEQ; }
 ">="                { return _GEQ; }
-"+"                 { return _PLUS; }
-"-"                 { return _MINUS; }
-"*"                 { return _MUL; }
-"/"                 { return _DIV; }
+"+"                 { yylval.s = strdup(yytext);return _PLUS; }
+"-"                 { yylval.s = strdup(yytext);return _MINUS; }
+"*"                 { yylval.s = strdup(yytext);return _MUL; }
+"/"                 { yylval.s = strdup(yytext);return _DIV; }
 "="                 { return _EQ; }
 "<"                 { return _LT; }
 ">"                 { return _GT; }
