@@ -1,0 +1,25 @@
+PROGRAM test
+BEGIN
+	INT a,b,c,x,y,z,h,j,k;
+	STRING s1 := "string";
+	FUNCTION VOID printout (INT a,INT b,INT c)
+	BEGIN
+		WRITE (a);
+		WRITE (b);
+		WRITE (c);
+	END
+  	
+  	FUNCTION INT main()
+	BEGIN
+		IF (a = b)
+			h:=0;
+		ELSE
+			j := 0;
+			WHILE ( j <= 10 )
+			     a := j;
+			     j := j + 1;
+		    ENDWHILE
+		ENDIF
+		RETURN a+b;
+	END
+END

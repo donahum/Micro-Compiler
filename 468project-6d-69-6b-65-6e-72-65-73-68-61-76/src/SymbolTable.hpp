@@ -1,35 +1,33 @@
-#ifndef STE_H
-#define STE_H
-#include "SymbolTableEntry.hpp"
-#endif
-
-//#include "SymbolTableEntry.hpp"
+#ifndef ST_H
+#define ST_H
 
 #include <iostream>
 #include <vector>
+#include <map>
+
+class SymbolTableEntry
+{
+public:
+	SymbolTableEntry(std::string nm, std::string tp, std::string val):name(nm), type(tp), value(val){}
+	SymbolTableEntry(std::string nm, std::string tp):name(nm), type(tp), value(""){}
+	std::string name;
+	std::string type;
+	std::string value;
+	void printSTE();///print the symbol
+};
 
 class SymbolTable
 {
-	public:
-		std::vector<SymbolTableEntry> vec;
+public:
+	std::map<std::string, SymbolTableEntry*> table;
+	std::vector<SymbolTableEntry*> ordered_table;
+	SymbolTable* parent;
+	std::vector<SymbolTable*> children;
+	std::string scope; 
 
-		SymbolTable();
-
-		SymbolTable(std::string sc);
-
-		SymbolTable(std::string * sc);
-
-		void addEntry(SymbolTableEntry * newEntry);
-		void addEntryToFront(SymbolTableEntry * newEntry);
-
-		void copyEntriesFromST(SymbolTable * srcTable);
-		void copyEntriesFromSTToFront(SymbolTable * srcTable);
-
-		void printST();
-
-		std::string getScope();
-		void setScope(std::string sc);
-		
-	private:
-		std::string scope;	//global, func x, block x, etc
+	SymbolTable(std::string s, SymbolTable* p): scope(s), parent(p){}
+	void addEntry(SymbolTableEntry * newEntry);
+	void printST();
 };
+
+#endif

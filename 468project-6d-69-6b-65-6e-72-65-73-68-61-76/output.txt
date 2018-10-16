@@ -1,1 +1,74 @@
-Accepted
+Type: ASSIGN
+Type: VAR_REF
+Type: LITERAL
+litType: isINT
+
+Type: ASSIGN
+Type: VAR_REF
+Type: LITERAL
+litType: isINT
+
+Type: ASSIGN
+Type: VAR_REF
+Type: LITERAL
+litType: isINT
+
+Type: ASSIGN
+Type: VAR_REF
+Type: ADD_EXPR
+Op: +
+Type: ADD_EXPR
+Op: +
+Type: ADD_EXPR
+Op: +
+Type: VAR_REF
+Type: MULT_EXPR
+Op: *
+Type: VAR_REF
+Type: VAR_REF
+Type: MULT_EXPR
+Op: /
+Type: ADD_EXPR
+Op: +
+Type: MULT_EXPR
+Op: *
+Type: VAR_REF
+Type: VAR_REF
+Type: VAR_REF
+Type: VAR_REF
+Type: LITERAL
+litType: isINT
+
+Type: ASSIGN
+Type: VAR_REF
+Type: ADD_EXPR
+Op: +
+Type: MULT_EXPR
+Op: *
+Type: VAR_REF
+Type: VAR_REF
+Type: VAR_REF
+
+Type: ASSIGN
+Type: VAR_REF
+Type: MULT_EXPR
+Op: /
+Type: MULT_EXPR
+Op: *
+Type: VAR_REF
+Type: VAR_REF
+Type: VAR_REF
+
+SYMBOL TABLE GLOBAL
+name a type INT
+name b type INT
+name c type INT
+
+SYMBOL TABLE main
+
+
+1
+FILE: src/Node.cpp, LINE: 160
+Node Start
+pre-IR
+FILE: src/Node.cpp, LINE: 177

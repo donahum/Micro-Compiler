@@ -1,91 +1,36 @@
-#ifndef ST_H
-#define ST_H
 #include "SymbolTable.hpp"
-#endif
-
-#ifndef STE_H
-#define STE_H
-#include "SymbolTableEntry.hpp"
-#endif
-
-SymbolTable::SymbolTable(std::string sc)
-{
-	scope = sc;
-	vec = std::vector<SymbolTableEntry>();
-}
-
-SymbolTable::SymbolTable(std::string * sc)
-{
-	scope = *sc;
-	vec = std::vector<SymbolTableEntry>();
-}
-
-SymbolTable::SymbolTable()
-{
-	scope = "";
-	vec = std::vector<SymbolTableEntry>();
-}
-
-void SymbolTable::setScope(std::string sc)
-{
-	scope = sc;
-}
 
 void SymbolTable::addEntry(SymbolTableEntry * newEntry)
 {
-	//std::cout << "Adding new entry to symbol table " << scope << "\n";
-	vec.push_back(*newEntry);
+	if(table.find(newEntry->name) != table.end()){
+		std::cout<<"DECLARATION ERROR\n"<<newEntry->name<<"\n";
+		exit(0);
+	}
+	//table.insert(newEntry->name, newEntry);
+	table.insert(std::pair<std::string, SymbolTableEntry *>(newEntry->name, newEntry));
+	ordered_table.push_back(newEntry);
 }
 
-void SymbolTable::addEntryToFront(SymbolTableEntry * newEntry)
-{
-	//std::cout << "Adding new entry to symbol table " << scope << "\n";
-	vec.insert(vec.begin(), *newEntry);
+void SymbolTableEntry::printSTE(){
+	if(!type.compare("STRING")){
+		std::cout << "name " << name << " type " << type << " value " << value;
+		//std::cout << "name type value";
+	}else if((!type.compare("INT")) || (!type.compare("FLOAT")) || (!type.compare("VOID")))	{
+		std::cout << "name " << name << " type " << type;
+		//std::cout << "name type";
+	}
+	return;
 }
 
-void SymbolTable::copyEntriesFromST(SymbolTable * srcTable)
-{
-	for(std::vector<int>::size_type i = 0; i != (srcTable->vec).size(); ++i)
-	{
-		vec.push_back((srcTable->vec).at(i));
+void SymbolTable::printST(){
+	std::cout<<"SYMBOL TABLE "<<scope<<"\n";
+	for(auto sym : ordered_table){
+		sym->printSTE();
+		std::cout<<"\n";
+	}
+	std::cout<<"\n";
+	for(auto child : children){
+		child->printST();
+		std::cout<<"\n";
 	}
 }
-
-void SymbolTable::copyEntriesFromSTToFront(SymbolTable * srcTable)
-{
-	for(std::vector<int>::size_type i = 0; i != (srcTable->vec).size(); ++i)
-	{
-		vec.insert(vec.begin(), (srcTable->vec).at(i));
-	}
-}
-
-void SymbolTable::printST()
-{
-	std::cout << "Symbol table " << scope << "\n";
-
-	for(std::vector<int>::size_type i = 0; i != vec.size(); ++i)
-	{
-		if(i != 0){
-			std::cout << std::endl;
-		}
-		vec[i].printSTE();
-	}
-}
-
-std::string SymbolTable::getScope()
-{
-	return scope;
-}
-
-/*int main()
-{
-	SymbolTableEntry entry1 = SymbolTableEntry("id1", "STRING", "This is a string.");
-	SymbolTableEntry entry2 = SymbolTableEntry("id2", "INT");
-	SymbolTableEntry entry3 = SymbolTableEntry("id3", "FLOAT");
-	SymbolTable table = SymbolTable("GLOBAL");
-	table.addEntry(entry1);
-	table.addEntry(entry2);
-	table.addEntry(entry3);
-	table.printST();
-	return 0;
-}*/
