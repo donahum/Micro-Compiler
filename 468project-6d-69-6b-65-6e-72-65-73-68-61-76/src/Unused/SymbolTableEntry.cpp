@@ -42,8 +42,7 @@ SymbolTableEntry::SymbolTableEntry(std::string * nm, std::string * tp)				//for 
 	value = "";
 }
 
-void SymbolTableEntry::printSTE()
-{
+void SymbolTableEntry::printSTE(){
 	if(!type.compare("STRING")){
 		std::cout << "name " << name << " type " << type << " value " << value;
 		//std::cout << "name type value";
@@ -54,59 +53,26 @@ void SymbolTableEntry::printSTE()
 	return;
 }
 
-std::string SymbolTableEntry::getName()
-{
+std::string SymbolTableEntry::getName(){
 	return name;
 }
 
-std::string SymbolTableEntry::getType()
-{
+std::string SymbolTableEntry::getType(){
 	return type;
 }
 
-std::string SymbolTableEntry::getValue()
-{
+std::string SymbolTableEntry::getValue(){
 	return value;
 }
 
-void SymbolTableEntry::setName(std::string nm)
-{
+void SymbolTableEntry::setName(std::string nm){
 	name = nm;
 }
 
-void SymbolTableEntry::setType(std::string tp)
-{
+void SymbolTableEntry::setType(std::string tp){
 	type = tp;
 }
 
-void SymbolTableEntry::setValue(std::string val)
-{
+void SymbolTableEntry::setValue(std::string val){
 	value = val;
 }
-
-/*int main()
-{
-	SymbolTableEntry entry1 = SymbolTableEntry("id1", "STRING", "This is a string.");
-	SymbolTableEntry entry2 = SymbolTableEntry("id2", "INT");
-	SymbolTableEntry entry3 = SymbolTableEntry("id3", "FLOAT");
-	SymbolTableEntry entry4 = SymbolTableEntry();
-	entry4.setName("id4");
-	entry4.setType("INT");
-
-	entry1.printSTE();
-	std::cout << std::endl;
-	entry2.printSTE();
-	std::cout << std::endl;
-	entry3.printSTE();
-	std::cout << std::endl;
-	entry4.printSTE();
-	std::cout << std::endl;
-
-	std::string name = "first";
-	std::string type = "STRING";
-	std::string value = "Trying Pointers";
-	SymbolTableEntry entry5 = SymbolTableEntry(&name, &type, &value);
-	entry5.printSTE();
-	std::cout << std::endl;
-	return 0;
-}*/

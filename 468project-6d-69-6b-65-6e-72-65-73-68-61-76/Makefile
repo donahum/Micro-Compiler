@@ -12,17 +12,11 @@ compiler:
 	bison -d -o generated/parser.cpp src/parser.yy
 	g++ -std=c++0x -g -c -o build/parser.o generated/parser.cpp
 	g++ -std=c++0x -g -c -o build/scanner.o generated/scanner.cpp
-	g++ -std=c++0x -g -c -o build/main.o src/parse_main.cpp
+	g++ -std=c++0x -g -c -o build/main.o src/main.cpp
 	g++ -std=c++0x -g -c -o build/SymbolTable.o src/SymbolTable.cpp
-	g++ -std=c++0x -g -c -o build/SymbolTableEntry.o src/SymbolTableEntry.cpp
-	g++ -std=c++0x -g -c -o build/ASTNode.o src/ASTNode.cpp
-	g++ -std=c++0x -g -c -o build/AddExprNode.o src/AddExprNode.cpp
-	g++ -std=c++0x -g -c -o build/MulExprNode.o src/MulExprNode.cpp
-	g++ -std=c++0x -g -c -o build/VarRefNode.o src/VarRefNode.cpp
-	g++ -std=c++0x -g -c -o build/LiteralNode.o src/LiteralNode.cpp
-	g++ -std=c++0x -g -c -o build/AssignNode.o src/AssignNode.cpp
-	g++ -std=c++0x -g -c -o build/FuncNode.o src/FuncNode.cpp
-	g++ -std=c++0x -g -o Micro build/scanner.o build/parser.o build/main.o build/SymbolTable.o build/SymbolTableEntry.o build/ASTNode.o build/AddExprNode.o build/MulExprNode.o build/VarRefNode.o build/LiteralNode.o build/AssignNode.o build/FuncNode.o
+	g++ -std=c++0x -g -c -o build/Node.o src/Node.cpp
+	g++ -std=c++0x -g -o Micro build/scanner.o build/parser.o build/main.o build/SymbolTable.o build/Node.o
+
 
 scanner:
 	mkdir -p generated

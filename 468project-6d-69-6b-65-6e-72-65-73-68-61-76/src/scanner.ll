@@ -20,7 +20,7 @@ EATUPWHITESPACE     [ \t\r\n]+
 
 {COMMENT}           { ; }
 
-"PROGRAM"           { yylval.s = strdup(yytext);return _PROGRAM; }
+"PROGRAM"           { return _PROGRAM; }
 "BEGIN"             { return _BEGIN; }
 "END"               { return _END; }
 "FUNCTION"          { return _FUNCTION; }
@@ -32,29 +32,29 @@ EATUPWHITESPACE     [ \t\r\n]+
 "WHILE"             { return _WHILE; }
 "ENDWHILE"          { return _ENDWHILE; }
 "RETURN"            { return _RETURN; }
-"INT"               { yylval.s = strdup(yytext); return _INT; }
-"VOID"              { yylval.s = strdup(yytext); return _VOID; }
-"STRING"            { yylval.s = strdup(yytext); return _STRING; }
-"FLOAT"             { yylval.s = strdup(yytext); return _FLOAT; }
+"INT"               { return _INT; }
+"VOID"              { return _VOID; }
+"STRING"            { return _STRING; }
+"FLOAT"             { return _FLOAT; }
 "TRUE"              { return _TRUE; }
 "FALSE"             { return _FALSE; }
 
-{IDENTIFIER}        { yylval.s = strdup(yytext);return _IDENTIFIER; }
+{IDENTIFIER}        { return _IDENTIFIER; }
 
-{STRINGLITERAL}     { yylval.s = strdup(yytext); return _STRINGLITERAL; }
+{STRINGLITERAL}     { return _STRINGLITERAL; }
 
-{FLOATLITERAL}      { yylval.s = strdup(yytext); return _FLOATLITERAL; }
+{FLOATLITERAL}      { return _FLOATLITERAL; }
 
-{INTLITERAL}        { yylval.s = strdup(yytext); return _INTLITERAL; }
+{INTLITERAL}        { return _INTLITERAL; }
 
 ":="                { return _ASSIGN; }
 "!="                { return _NEQ; }
 "<="                { return _LEQ; }
 ">="                { return _GEQ; }
-"+"                 { yylval.s = strdup(yytext);return _PLUS; }
-"-"                 { yylval.s = strdup(yytext);return _MINUS; }
-"*"                 { yylval.s = strdup(yytext);return _MUL; }
-"/"                 { yylval.s = strdup(yytext);return _DIV; }
+"+"                 { return _PLUS; }
+"-"                 { return _MINUS; }
+"*"                 { return _MUL; }
+"/"                 { return _DIV; }
 "="                 { return _EQ; }
 "<"                 { return _LT; }
 ">"                 { return _GT; }

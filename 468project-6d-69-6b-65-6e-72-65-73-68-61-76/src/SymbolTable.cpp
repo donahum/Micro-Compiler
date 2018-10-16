@@ -1,5 +1,4 @@
 #include "SymbolTable.hpp"
-//#include "SymbolTableEntry.hpp"
 
 void SymbolTable::addEntry(SymbolTableEntry * newEntry)
 {
@@ -12,29 +11,26 @@ void SymbolTable::addEntry(SymbolTableEntry * newEntry)
 	ordered_table.push_back(newEntry);
 }
 
-void SymbolTable::printST()
-{
-	// std::cout << "Symbol table " << scope << "\n";
-
-	// for(std::vector<int>::size_type i = 0; i != vec.size(); ++i)
-	// {
-	// 	if(i != 0){
-	// 		std::cout << std::endl;
-	// 	}
-	// 	vec[i].printSTE();
-	// }
+void SymbolTableEntry::printSTE(){
+	if(!type.compare("STRING")){
+		std::cout << "name " << name << " type " << type << " value " << value;
+		//std::cout << "name type value";
+	}else if((!type.compare("INT")) || (!type.compare("FLOAT")) || (!type.compare("VOID")))	{
+		std::cout << "name " << name << " type " << type;
+		//std::cout << "name type";
+	}
+	return;
 }
 
-
-/*int main()
-{
-	SymbolTableEntry entry1 = SymbolTableEntry("id1", "STRING", "This is a string.");
-	SymbolTableEntry entry2 = SymbolTableEntry("id2", "INT");
-	SymbolTableEntry entry3 = SymbolTableEntry("id3", "FLOAT");
-	SymbolTable table = SymbolTable("GLOBAL");
-	table.addEntry(entry1);
-	table.addEntry(entry2);
-	table.addEntry(entry3);
-	table.printST();
-	return 0;
-}*/
+void SymbolTable::printST(){
+	std::cout<<"SYMBOL TABLE "<<scope<<"\n";
+	for(auto sym : ordered_table){
+		sym->printSTE();
+		std::cout<<"\n";
+	}
+	std::cout<<"\n";
+	for(auto child : children){
+		child->printST();
+		std::cout<<"\n";
+	}
+}
