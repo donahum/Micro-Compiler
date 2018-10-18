@@ -1,0 +1,95 @@
+Commit ID tagged for submission: 333475112b932bc24d61e9a0e7dc797a8b20c4d4
+Submission graded at: 2018-10-17 23:36:53
+
+mkdir -p generated
+mkdir -p build
+flex -o generated/scanner.cpp src/scanner.ll
+bison -d -o generated/parser.cpp src/parser.yy
+g++ -std=c++0x -g -c -o build/parser.o generated/parser.cpp -static-libstdc++
+g++ -std=c++0x -g -c -o build/scanner.o generated/scanner.cpp -static-libstdc++
+g++ -std=c++0x -g -c -o build/main.o src/main.cpp -static-libstdc++
+g++ -std=c++0x -g -c -o build/SymbolTable.o src/SymbolTable.cpp -static-libstdc++
+g++ -std=c++0x -g -c -o build/Node.o src/Node.cpp -static-libstdc++
+g++ -std=c++0x -g -o Micro build/scanner.o build/parser.o build/main.o build/SymbolTable.o build/Node.o -static-libstdc++
+Testing..... test_mult.micro
+Key output:
+ 91
+36
+163
+
+
+Student output:
+ 91
+36
+163
+
+
+Testing..... test_complex.micro
+Key output:
+ 692
+920
+920
+3.55
+
+
+Student output:
+ 692
+920
+920
+3.55
+
+
+Testing..... test_combination.micro
+Key output:
+ 692920920
+
+Student output:
+ 692920920
+
+Testing..... test_expr.micro
+Key output:
+ 1
+2
+10
+20
+3
+30
+27
+-20
+218
+228
+268
+-10
+1
+3.14159
+2
+1.5708
+1.5708
+2
+4
+15.5277
+
+
+Student output:
+ 1
+2
+10
+20
+3
+30
+27
+-20
+218
+228
+268
+-10
+1
+3.14159
+2
+1.5708
+1.5708
+2
+4
+15.5277
+
+
