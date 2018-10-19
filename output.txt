@@ -1,0 +1,56 @@
+Commit ID tagged for submission: 864414b0763850f60bfdad47a00d50ddf195b656
+Submission graded at: 2018-10-19 10:00:05
+
+mkdir -p generated
+mkdir -p build
+flex -o generated/scanner.cpp src/scanner.ll
+bison -d -o generated/parser.cpp src/parser.yy
+g++ -std=c++0x -g -c -o build/parser.o generated/parser.cpp
+g++ -std=c++0x -g -c -o build/scanner.o generated/scanner.cpp
+g++ -std=c++0x -g -c -o build/main.o src/parse_main.cpp
+g++ -std=c++0x -g -c -o build/SymbolTable.o src/SymbolTable.cpp
+g++ -std=c++0x -g -c -o build/SymbolTableEntry.o src/SymbolTableEntry.cpp
+g++ -std=c++0x -g -o Micro build/scanner.o build/parser.o build/main.o build/SymbolTable.o build/SymbolTableEntry.o
+/var/tmp/ece468-grader-environment/ece468-grader/repositories/468PROJECT-6d-69-6b-65-6e-72-65-73-68-61-76/grader_step2.sh: line 12: @rm: command not found
+Testing.....test10.micro
+Test Passed
+Testing.....test11.micro
+Test Passed
+Testing.....test12.micro
+Test Passed
+Testing.....test13.micro
+Test Passed
+Testing.....test14.micro
+Test Passed
+Testing.....test15.micro
+Test Passed
+Testing.....test16.micro
+Test Passed
+Testing.....test17.micro
+Test Passed
+Testing.....test18.micro
+Test Passed
+Testing.....test19.micro
+Test Passed
+Testing.....test1.micro
+Test Passed
+Testing.....test20.micro
+Test Passed
+Testing.....test21.micro
+Test Passed
+Testing.....test2.micro
+Test Passed
+Testing.....test3.micro
+Test Passed
+Testing.....test4.micro
+Test Passed
+Testing.....test5.micro
+Test Passed
+Testing.....test6.micro
+Test Passed
+Testing.....test7.micro
+Test Passed
+Testing.....test8.micro
+Test Passed
+Testing.....test9.micro
+Test Passed
