@@ -1,0 +1,308 @@
+Commit ID tagged for submission: 9cec3e88a6e1b905e45a7d729b905e58ea5266a6
+Submission graded at: 2018-10-19 09:51:27
+
+mkdir -p generated
+mkdir -p build
+flex -o generated/scanner.cpp src/scanner.ll
+bison -d -o generated/parser.cpp src/parser.yy
+g++ -std=c++0x -g -c -o build/parser.o generated/parser.cpp
+g++ -std=c++0x -g -c -o build/scanner.o generated/scanner.cpp
+g++ -std=c++0x -g -c -o build/main.o src/parse_main.cpp
+g++ -std=c++0x -g -c -o build/SymbolTable.o src/SymbolTable.cpp
+g++ -std=c++0x -g -c -o build/SymbolTableEntry.o src/SymbolTableEntry.cpp
+g++ -std=c++0x -g -o Micro build/scanner.o build/parser.o build/main.o build/SymbolTable.o build/SymbolTableEntry.o
+Testing.....test11.micro
+Symbol table GLOBAL
+name a type INT
+name b type INT
+name c type INT
+name x type FLOAT
+name y type FLOAT
+name z type FLOAT
+name h type INT
+name j type INT
+name k type INT
+
+Symbol table function1
+
+
+Symbol table function2
+
+
+Symbol table main
+
+
+diff: ./test/QpLifvZd9swD3qyFDJkKeyKLNaOGVHP7/test11.out: No such file or directory
+Test Passed
+Testing.....test13.micro
+Symbol table GLOBAL
+name i type INT
+name a type INT
+name b type INT
+name c type INT
+name x type FLOAT
+name y type FLOAT
+name z type FLOAT
+name h type INT
+name s1 type STRING value "string"
+
+Symbol table function1
+
+
+Symbol table function2
+
+
+Symbol table main
+
+
+diff: ./test/QpLifvZd9swD3qyFDJkKeyKLNaOGVHP7/test13.out: No such file or directory
+Test Passed
+Testing.....test14.micro
+Symbol table GLOBAL
+name i type INT
+name a type INT
+name b type INT
+name c type INT
+name x type FLOAT
+name y type FLOAT
+name z type FLOAT
+name h type INT
+name s1 type STRING value "string"
+
+diff: ./test/QpLifvZd9swD3qyFDJkKeyKLNaOGVHP7/test14.out: No such file or directory
+Test Passed
+Testing.....test16.micro
+Symbol table GLOBAL
+
+
+Symbol table main
+
+
+diff: ./test/QpLifvZd9swD3qyFDJkKeyKLNaOGVHP7/test16.out: No such file or directory
+Test Passed
+Testing.....test18.micro
+Symbol table GLOBAL
+name str type STRING value "test"
+name a type INT
+name b type INT
+name c type INT
+name g type INT
+name h type INT
+name i type INT
+name j type INT
+name k type INT
+name l type INT
+name p type INT
+name o type INT
+name r type INT
+name u type INT
+name y type INT
+
+Symbol table main
+name a type INT
+
+Symbol table BLOCK 2
+
+
+Symbol table BLOCK 1
+
+
+diff: ./test/QpLifvZd9swD3qyFDJkKeyKLNaOGVHP7/test18.out: No such file or directory
+Test Passed
+Testing.....test19.micro
+Symbol table GLOBAL
+name dummy type STRING value "abcde"
+name i type INT
+name j type INT
+name k type INT
+
+Symbol table main
+
+
+Symbol table BLOCK 1
+
+
+Symbol table BLOCK 2
+
+
+Symbol table BLOCK 3
+
+
+diff: ./test/QpLifvZd9swD3qyFDJkKeyKLNaOGVHP7/test19.out: No such file or directory
+Test Passed
+Testing.....test1.micro
+Symbol table GLOBAL
+
+
+diff: ./test/QpLifvZd9swD3qyFDJkKeyKLNaOGVHP7/test1.out: No such file or directory
+Test Passed
+Testing.....test20.micro
+Symbol table GLOBAL
+name input type STRING value "Please input an integer number: "
+name space type STRING value " "
+name eol type STRING value "\n"
+
+Symbol table F
+name n type INT
+
+Symbol table BLOCK 1
+
+
+Symbol table BLOCK 2
+
+
+Symbol table BLOCK 3
+
+
+Symbol table BLOCK 4
+
+
+Symbol table BLOCK 5
+
+
+Symbol table BLOCK 6
+
+
+Symbol table main
+name i type INT
+name end type INT
+name result type INT
+
+Symbol table BLOCK 7
+
+
+diff: ./test/QpLifvZd9swD3qyFDJkKeyKLNaOGVHP7/test20.out: No such file or directory
+Test Passed
+Testing.....test21.micro
+Symbol table GLOBAL
+name dummy type STRING value "abcde"
+name n type FLOAT
+name x1 type FLOAT
+name x2 type FLOAT
+name fx type FLOAT
+name dfx type FLOAT
+name error type FLOAT
+name i type INT
+
+Symbol table main
+
+
+Symbol table BLOCK 1
+
+
+diff: ./test/QpLifvZd9swD3qyFDJkKeyKLNaOGVHP7/test21.out: No such file or directory
+Test Passed
+Testing.....test22.micro
+DECLARATION ERROR n
+diff: ./test/QpLifvZd9swD3qyFDJkKeyKLNaOGVHP7/test22.out: No such file or directory
+Test Passed
+Testing.....test5.micro
+Symbol table GLOBAL
+name str type STRING value "test"
+name a type INT
+name b type INT
+name c type INT
+name g type INT
+name h type INT
+name i type INT
+name j type INT
+name k type INT
+name l type INT
+name p type INT
+name o type INT
+name r type INT
+name u type INT
+name y type INT
+
+Symbol table main
+
+
+diff: ./test/QpLifvZd9swD3qyFDJkKeyKLNaOGVHP7/test5.out: No such file or directory
+Test Passed
+Testing.....test6.micro
+Symbol table GLOBAL
+name a type INT
+name b type INT
+name c type INT
+name x type INT
+name y type INT
+name z type INT
+name h type INT
+name j type INT
+name k type INT
+
+Symbol table printout
+name a type INT
+name b type INT
+name c type INT
+
+Symbol table main
+
+
+Symbol table BLOCK 1
+
+
+Symbol table BLOCK 2
+
+
+Symbol table BLOCK 3
+
+
+diff: ./test/QpLifvZd9swD3qyFDJkKeyKLNaOGVHP7/test6.out: No such file or directory
+Test Passed
+Testing.....test7.micro
+Symbol table GLOBAL
+name input type STRING value "Please input an integer number: "
+name space type STRING value " "
+name eol type STRING value "\n"
+
+Symbol table F
+name n type INT
+
+Symbol table BLOCK 1
+
+
+Symbol table BLOCK 2
+
+
+Symbol table BLOCK 3
+
+
+Symbol table BLOCK 4
+
+
+Symbol table BLOCK 5
+
+
+Symbol table BLOCK 6
+
+
+Symbol table main
+name i type INT
+name end type INT
+name result type INT
+
+Symbol table BLOCK 7
+
+
+diff: ./test/QpLifvZd9swD3qyFDJkKeyKLNaOGVHP7/test7.out: No such file or directory
+Test Passed
+Testing.....test8.micro
+Symbol table GLOBAL
+name dummy type STRING value "abcde"
+name n type FLOAT
+name x1 type FLOAT
+name x2 type FLOAT
+name fx type FLOAT
+name dfx type FLOAT
+name error type FLOAT
+name i type INT
+
+Symbol table main
+
+
+Symbol table BLOCK 1
+
+
+diff: ./test/QpLifvZd9swD3qyFDJkKeyKLNaOGVHP7/test8.out: No such file or directory
+Test Passed
