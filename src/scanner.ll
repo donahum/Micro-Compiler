@@ -63,6 +63,6 @@ EATUPWHITESPACE     [ \t\r\n]+
 ";"                 { return _SEMICOLON; }
 ","                 { return _COMMA; }
 
-
+ 
 %%
 
