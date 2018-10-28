@@ -119,18 +119,34 @@ void ReadNode::printNode()
 	printNodeType();
 }
 
+void WhileNode::printNode()
+{
+	std::cout << "Type: ";
+	printNodeType();
+}
+
+void IfNode::printNode()
+{
+	std::cout << "Type: ";
+	printNodeType();
+}
+
+void ElseNode::printNode()
+{
+	std::cout << "Type: ";
+	printNodeType();
+}
+
 MulExprNode::MulExprNode(std::string inputOp, ASTNodeType type) : ASTNode::ASTNode(type){
 	mul_op = inputOp;
 }
-
 
 LiteralNode::LiteralNode(LiteralType litType_src, std::string val_src, ASTNodeType type) : ASTNode::ASTNode(type){
 	litType = litType_src;
 	val = val_src;
 }
 
-FuncNode::FuncNode(std::string name_src, std::list<ASTNode *> * node_src, SymbolTable * table_src, ASTNodeType type) 
-					: ASTNode::ASTNode(type){
+FuncNode::FuncNode(std::string name_src, std::list<ASTNode *> * node_src, SymbolTable * table_src, ASTNodeType type) : ASTNode::ASTNode(type){
 	name = name_src;
 	node_list = node_src;
 	table = table_src;
@@ -157,10 +173,384 @@ ReadNode::ReadNode(std::list<std::string> * str_list_src2, ASTNodeType type) : A
 	ident_list2 = str_list_src2;
 }
 
+WhileNode::WhileNode(ASTNode * cond_node_left_src, ASTNode * cond_node_right_src, std::list<ASTNode *> stmt_nodes_src, int blockID_src, JumpType jtype_src, ASTNodeType type) : ASTNode::ASTNode(type){
+	cond_node_left = cond_node_left_src;
+	cond_node_right = cond_node_right_src;
+	stmt_nodes = stmt_nodes_src;
+	blockID = blockID_src;
+	jtype = jtype_src;
+}
+
+WhileNode::WhileNode(ASTNode * cond_node_left_src, ASTNode * cond_node_right_src, int blockID_src, JumpType jtype_src, ASTNodeType type) : ASTNode::ASTNode(type){
+	cond_node_left = cond_node_left_src;
+	cond_node_right = cond_node_right_src;
+	stmt_nodes = std::list<ASTNode *>(0);
+	blockID = blockID_src;
+	jtype = jtype_src;
+}
+
+//else defined
+IfNode::IfNode(ASTNode * cond_node_left_src, ASTNode * cond_node_right_src, std::list<ASTNode *> stmt_nodes_src, int blockID_src, JumpType jtype_src, ElseNode * else_node_src, ASTNodeType type) : ASTNode::ASTNode(type){
+	cond_node_left = cond_node_left_src;
+	cond_node_right = cond_node_right_src;
+	stmt_nodes = stmt_nodes_src;
+	blockID = blockID_src;
+	jtype = jtype_src;
+	else_node = else_node_src;
+}
+
+//else not defined
+IfNode::IfNode(ASTNode * cond_node_left_src, ASTNode * cond_node_right_src, std::list<ASTNode *> stmt_nodes_src, int blockID_src, JumpType jtype_src, ASTNodeType type) : ASTNode::ASTNode(type){
+	cond_node_left = cond_node_left_src;
+	cond_node_right = cond_node_right_src;
+	stmt_nodes = stmt_nodes_src;
+	blockID = blockID_src;
+	jtype = jtype_src;
+	else_node = new ElseNode(ASTNodeType::ELSE);
+}
+
+//stmt_nodes = null
+IfNode::IfNode(ASTNode * cond_node_left_src, ASTNode * cond_node_right_src, int blockID_src, JumpType jtype_src, ElseNode * else_node_src, ASTNodeType type) : ASTNode::ASTNode(type){
+	cond_node_left = cond_node_left_src;
+	cond_node_right = cond_node_right_src;
+	stmt_nodes = std::list<ASTNode *>(0);
+	blockID = blockID_src;
+	jtype = jtype_src;
+	else_node = else_node_src;
+}
+
+IfNode::IfNode(ASTNode * cond_node_left_src, ASTNode * cond_node_right_src, int blockID_src, JumpType jtype_src, ASTNodeType type) : ASTNode::ASTNode(type){
+	cond_node_left = cond_node_left_src;
+	cond_node_right = cond_node_right_src;
+	stmt_nodes = std::list<ASTNode *>(0);
+	blockID = blockID_src;
+	jtype = jtype_src;
+	else_node = new ElseNode(ASTNodeType::ELSE);
+}
+
+ElseNode::ElseNode(std::list<ASTNode *> stmt_nodes_src, int blockID_src, ASTNodeType type) : ASTNode::ASTNode(type){
+	stmt_nodes = stmt_nodes_src;
+	blockID = blockID_src;
+}
+
+ElseNode::ElseNode(int blockID_src, ASTNodeType type) : ASTNode::ASTNode(type){
+	stmt_nodes = std::list<ASTNode *>(0);
+	blockID = blockID_src;
+}
+
+ElseNode::ElseNode(ASTNodeType type) : ASTNode::ASTNode(type){
+	stmt_nodes = std::list<ASTNode *>(0);
+	blockID = -1;
+}
+
+void ElseNode::setBlockID(int blockID_supplied)
+{
+	blockID = blockID_supplied;
+}
+
+void WhileNode::copyStmtList(std::list<ASTNode *> stmt_nodes_supplied)
+{
+	stmt_nodes = stmt_nodes_supplied;
+}
+
+void IfNode::copyStmtList(std::list<ASTNode *> stmt_nodes_supplied)
+{
+	stmt_nodes = stmt_nodes_supplied;
+}
+
+void IfNode::copyElseNode(ElseNode * else_node_supplied)
+{
+	else_node = else_node_supplied;
+}
+
+void ElseNode::copyStmtList(std::list<ASTNode *> stmt_nodes_supplied)
+{
+	stmt_nodes = stmt_nodes_supplied;
+}
+
+std::string IfNode::TO_IR(){
+	//printf("FILE: %s, LINE: %d\n", __FILE__, __LINE__);
+	//std::cout << "IfNode->TO_IR()" << std::endl;
+	std::string else_start = "ELSE_" + std::to_string(this->blockID);
+	std::string else_end = "END_IF_ELSE_" + std::to_string(this->blockID);
+
+	std::string leftCondTmpy = this->cond_node_left->TO_IR();
+	std::string rightCondTmpy = this->cond_node_right->TO_IR();
+
+	std::string rightRef = "";
+
+	ThreeAC * branch_stmt = new ThreeAC();
+	SymbolTable * stackTop = ststack.top();
+
+	if( (this->cond_node_left->Type == ASTNodeType::VAR_REF) && (this->cond_node_right->Type == ASTNodeType::VAR_REF) )
+	{
+		ThreeAC putVarInReg = ThreeAC();
+		if(isINTType){
+			putVarInReg.Fill("STOREI", rightCondTmpy, "", "!T"+std::to_string(availableTemp));
+			availableTemp++;
+		}else{
+			putVarInReg.Fill("STOREF", rightCondTmpy, "", "!T"+std::to_string(availableTemp));
+			availableTemp++;
+		}
+
+		rightRef = putVarInReg.result;
+		IR.push_back(putVarInReg);
+
+		putVarInReg.Clear();
+	}else{
+		rightRef = rightCondTmpy;
+	}
+
+	if(stackTop->getTypeFromID(leftCondTmpy) == "INT")
+	{
+		switch(jtype)
+		{
+			case JumpType::G_T:	
+				branch_stmt->Fill("LEI", leftCondTmpy, rightRef, else_start);
+				break;
+			case JumpType::G_E:
+				branch_stmt->Fill("LTI", leftCondTmpy, rightRef, else_start);
+				break;
+			case JumpType::L_T:
+				branch_stmt->Fill("GEI", leftCondTmpy, rightRef, else_start);
+				break;
+			case JumpType::L_E:
+				branch_stmt->Fill("GTI", leftCondTmpy, rightRef, else_start);
+				break;
+			case JumpType::N_E:
+				branch_stmt->Fill("EQI", leftCondTmpy, rightRef, else_start);
+				break;
+			case JumpType::E_Q:
+				branch_stmt->Fill("NEI", leftCondTmpy, rightRef, else_start);
+				break;
+			default:
+				std::cout << "There's some branching error here\n";
+		}
+	}
+	else if(stackTop->getTypeFromID(leftCondTmpy) == "FLOAT")
+	{
+		switch(jtype)
+		{
+			case JumpType::G_T:	
+				branch_stmt->Fill("LEF", leftCondTmpy, rightRef, else_start);
+				break;
+			case JumpType::G_E:
+				branch_stmt->Fill("LTF", leftCondTmpy, rightRef, else_start);
+				break;
+			case JumpType::L_T:
+				branch_stmt->Fill("GEF", leftCondTmpy, rightRef, else_start);
+				break;
+			case JumpType::L_E:
+				branch_stmt->Fill("GTF", leftCondTmpy, rightRef, else_start);
+				break;
+			case JumpType::N_E:
+				branch_stmt->Fill("EQF", leftCondTmpy, rightRef, else_start);
+				break;
+			case JumpType::E_Q:
+				branch_stmt->Fill("NEF", leftCondTmpy, rightRef, else_start);
+				break;
+			default:
+				std::cout << "There's some branching error here\n";
+		}
+	}
+
+	//if(else_node){
+		IR.push_back(*branch_stmt);
+		branch_stmt->Clear();
+	//}
+
+	//std::cout << stmt_nodes.size() << std::endl;
+
+	for(auto stmt : stmt_nodes){
+		if(stmt)
+		{	
+			//std::cout << "if stmts->TO_IR()" << std::endl;
+			stmt->TO_IR();
+		}
+	}
+
+	
+
+	//std::cout << "checking if there's an else node\n";
+	//std::cout << else_node << std::endl;	
+	//if(else_node)
+	//{
+		//std::cout << "there was an else node!\n";
+
+		toInsert.Fill("JUMP", else_end, "", "");
+		IR.push_back(toInsert);
+		toInsert.Clear();
+
+		toInsert.Fill("LABEL", else_start, "", "");
+		IR.push_back(toInsert);
+		toInsert.Clear();
+		if(else_node){
+			else_node->TO_IR();
+		}
+	//}
+	//std::cout << "got past else node!\n";
+
+	//if(else_node){
+		toInsert.Fill("LABEL", else_end, "", "");
+		IR.push_back(toInsert);
+		toInsert.Clear();
+	//}
+
+	//std::cout << "end of IfNode->TO_IR()\n";
+
+	return "";
+}
+
+std::string ElseNode::TO_IR(){
+	//std::cout << "ElseNode->TO_IR()" << std::endl;
+	//std::cout << stmt_nodes.size() << std::endl;
+	
+	for(auto stmt : this->stmt_nodes){
+		if(stmt)
+		{
+			//std::cout << "else stmt->TO_IR()" << std::endl;
+			stmt->TO_IR();
+		}
+	}
+
+	return "";
+}
+
+std::string WhileNode::TO_IR(){
+	//printf("FILE: %s, LINE: %d\n", __FILE__, __LINE__);
+	//std::cout << "in WhileNode->TO_IR()" << std::endl;
+	std::string while_start = "WHILE_START_" + std::to_string(this->blockID);
+	std::string while_end = "WHILE_END_" + std::to_string(this->blockID);
+
+	toInsert.Fill("LABEL", while_start, "", "");
+	IR.push_back(toInsert);
+	toInsert.Clear();
+
+	//std::cout << std::to_string(this->blockID) << std::endl;
+	
+
+	std::string leftCondTmpy = this->cond_node_left->TO_IR();
+	std::string rightCondTmpy = this->cond_node_right->TO_IR();
+	std::string rightRef = "";
+
+	ThreeAC * branch_stmt = new ThreeAC();
+	SymbolTable * stackTop = ststack.top();
+
+	if( (this->cond_node_left->Type == ASTNodeType::VAR_REF) && (this->cond_node_right->Type == ASTNodeType::VAR_REF) )
+	{
+		ThreeAC putVarInReg = ThreeAC();
+		if(isINTType){
+			putVarInReg.Fill("STOREI", rightCondTmpy, "", "!T"+std::to_string(availableTemp));
+			availableTemp++;
+		}else{
+			putVarInReg.Fill("STOREF", rightCondTmpy, "", "!T"+std::to_string(availableTemp));
+			availableTemp++;
+		}
+
+		rightRef = putVarInReg.result;
+		IR.push_back(putVarInReg);
+
+		putVarInReg.Clear();
+	}else{
+		rightRef = rightCondTmpy;
+	}
+
+	if(stackTop->getTypeFromID(leftCondTmpy) == "INT")
+	{
+		switch(jtype)
+		{
+			case JumpType::G_T:	
+				
+				branch_stmt->Fill("LEI", leftCondTmpy, rightRef, while_end);
+				break;
+			case JumpType::G_E:
+				branch_stmt->Fill("LTI", leftCondTmpy, rightRef, while_end);
+				break;
+			case JumpType::L_T:
+				branch_stmt->Fill("GEI", leftCondTmpy, rightRef, while_end);
+				break;
+			case JumpType::L_E:
+				branch_stmt->Fill("GTI", leftCondTmpy, rightRef, while_end);
+				break;
+			case JumpType::N_E:
+				branch_stmt->Fill("EQI", leftCondTmpy, rightRef, while_end);
+				break;
+			case JumpType::E_Q:
+				branch_stmt->Fill("NEI", leftCondTmpy, rightRef, while_end);
+				break;
+			default:
+				std::cout << "There's some branching error here\n";
+		}
+	}
+	else
+	{
+		switch(jtype)
+		{
+			case JumpType::G_T:	
+				branch_stmt->Fill("LEF", leftCondTmpy, rightRef, while_end);
+				break;
+			case JumpType::G_E:
+				branch_stmt->Fill("LTF", leftCondTmpy, rightRef, while_end);
+				break;
+			case JumpType::L_T:
+				branch_stmt->Fill("GEF", leftCondTmpy, rightRef, while_end);
+				break;
+			case JumpType::L_E:
+				branch_stmt->Fill("GTF", leftCondTmpy, rightRef, while_end);
+				break;
+			case JumpType::N_E:
+				branch_stmt->Fill("EQF", leftCondTmpy, rightRef, while_end);
+				break;
+			case JumpType::E_Q:
+				branch_stmt->Fill("NEF", leftCondTmpy, rightRef, while_end);
+				break;
+			default:
+				std::cout << "There's some branching error here\n";
+		}
+	}
+
+	IR.push_back(*branch_stmt);
+
+	for(auto stmt : stmt_nodes){
+		if(stmt)
+		{
+			//std::cout << "while stmt->TO_IR()" << std::endl;
+			stmt->TO_IR();
+		}
+	}
+
+	toInsert.Fill("JUMP", while_start, "", "");
+	IR.push_back(toInsert);
+	toInsert.Clear();
+
+	toInsert.Fill("LABEL", while_end, "", "");
+	IR.push_back(toInsert);
+	toInsert.Clear();
+
+	return "";
+}
+
 std::string FuncNode::TO_IR(){
 	//printf("FILE: %s, LINE: %d\n", __FILE__, __LINE__);
 
 	std::string funcName = this->name;
+
+    toInsert.Fill("PUSH", "", "", "");
+	IR.push_back(toInsert);
+	toInsert.Clear();
+
+	toInsert.Fill("PUSHREGS", "", "", "");
+	IR.push_back(toInsert);
+	toInsert.Clear();
+
+	toInsert.Fill("JSR", "FUNC_"+ funcName, "", "");
+	IR.push_back(toInsert);
+	toInsert.Clear();
+
+	toInsert.Fill("HALT", "", "", "");
+	IR.push_back(toInsert);
+	toInsert.Clear();
+
 	toInsert.Fill("LABEL", "FUNC_"+ funcName, "", "");
 	IR.push_back(toInsert);
 	toInsert.Clear();
@@ -172,6 +562,7 @@ std::string FuncNode::TO_IR(){
 	for(auto stmt : *node_list){
 		if(stmt)
 		{
+			//std::cout << "Func stmt->TO_IR()" << std::endl;
 			stmt->TO_IR();
 		}
 	}
@@ -255,6 +646,9 @@ std::string AssignNode::TO_IR(){
 
 	std::string idKey = this->Left->TO_IR();
 	SymbolTable * stackTop = ststack.top();
+	ThreeAC newAssign = ThreeAC();
+
+	std::string targetTmpy = this->Right->TO_IR();
 	
 	if(stackTop->getTypeFromID(idKey) == "INT")
 	{
@@ -263,13 +657,37 @@ std::string AssignNode::TO_IR(){
 		isINTType = 0;
 	}
 
-	std::string targetTmpy = this->Right->TO_IR();
-	ThreeAC newAssign = ThreeAC();
+	if( (this->Right->Type == ASTNodeType::VAR_REF) && (this->Left->Type == ASTNodeType::VAR_REF) )
+	{
+		ThreeAC putVarInReg = ThreeAC();
+		if(isINTType){
+			putVarInReg.Fill("STOREI", targetTmpy, "", "!T"+std::to_string(availableTemp));
+			availableTemp++;
+		}else{
+			putVarInReg.Fill("STOREF", targetTmpy, "", "!T"+std::to_string(availableTemp));
+			availableTemp++;
+		}
 
-	if(isINTType){
-		newAssign.Fill("STOREI", targetTmpy, "", idKey);
-	}else{
-		newAssign.Fill("STOREF", targetTmpy, "", idKey);
+		IR.push_back(putVarInReg);
+
+		if(isINTType){
+			newAssign.Fill("STOREI", putVarInReg.result, "", idKey);
+		}else{
+			newAssign.Fill("STOREF", putVarInReg.result, "", idKey);
+		}
+
+		putVarInReg.Clear();
+	}
+	else{
+		
+		
+		if(isINTType){
+			newAssign.Fill("STOREI", targetTmpy, "", idKey);
+		}else{
+			newAssign.Fill("STOREF", targetTmpy, "", idKey);
+		}
+
+		
 	}
 
 	IR.push_back(newAssign);
@@ -285,6 +703,45 @@ std::string AddExprNode::TO_IR(){
 	std::string rightTmpy = this->Right->TO_IR();
 
 	ThreeAC newAdd;
+
+	SymbolTable * stackTop = ststack.top();
+
+	if(this->Left->Type == ASTNodeType::VAR_REF)
+	{
+		if(stackTop->getTypeFromID( this->Left->TO_IR()) == "INT")
+		{
+			isINTType = 1;
+		}else{
+			isINTType = 0;
+		}
+	}
+	else if(this->Right->Type == ASTNodeType::VAR_REF)
+	{
+		if(stackTop->getTypeFromID( this->Right->TO_IR()) == "INT")
+		{
+			isINTType = 1;
+		}else{
+			isINTType = 0;
+		}
+	}
+	else if (this->Left->Type == ASTNodeType::LITERAL)
+	{
+		if(static_cast<LiteralNode *> (this->Left)->litType == LiteralType::isINT)
+		{
+			isINTType = 1;
+		}else{
+			isINTType = 0;
+		}
+	}
+	else if (this->Right->Type == ASTNodeType::LITERAL)
+	{
+		if(static_cast<LiteralNode *> (this->Right)->litType == LiteralType::isINT)
+		{
+			isINTType = 1;
+		}else{
+			isINTType = 0;
+		}
+	}
 
 	if(this->add_op == "+")
 	{
@@ -318,6 +775,45 @@ std::string MulExprNode::TO_IR(){
 
 	ThreeAC newMult = ThreeAC();
 
+	SymbolTable * stackTop = ststack.top();
+
+	if(this->Left->Type == ASTNodeType::VAR_REF)
+	{
+		if(stackTop->getTypeFromID( this->Left->TO_IR()) == "INT")
+		{
+			isINTType = 1;
+		}else{
+			isINTType = 0;
+		}
+	}
+	else if(this->Right->Type == ASTNodeType::VAR_REF)
+	{
+		if(stackTop->getTypeFromID( this->Right->TO_IR()) == "INT")
+		{
+			isINTType = 1;
+		}else{
+			isINTType = 0;
+		}
+	}
+	else if (this->Left->Type == ASTNodeType::LITERAL)
+	{
+		if(static_cast<LiteralNode *> (this->Left)->litType == LiteralType::isINT)
+		{
+			isINTType = 1;
+		}else{
+			isINTType = 0;
+		}
+	}
+	else if (this->Right->Type == ASTNodeType::LITERAL)
+	{
+		if(static_cast<LiteralNode *> (this->Right)->litType == LiteralType::isINT)
+		{
+			isINTType = 1;
+		}else{
+			isINTType = 0;
+		}
+	}
+
 	if(this->mul_op == "*")
 	{
 		if(isINTType){
@@ -345,7 +841,7 @@ std::string MulExprNode::TO_IR(){
 std::string LiteralNode::TO_IR(){
 	//printf("FILE: %s, LINE: %d\n", __FILE__, __LINE__);
 	ThreeAC newLit = ThreeAC();
-	if(isINTType){
+	if(this->litType == LiteralType::isINT){
 		newLit.Fill("STOREI", this->val, "", "!T"+std::to_string(availableTemp));
 		availableTemp++;
 	}else{
@@ -359,6 +855,18 @@ std::string LiteralNode::TO_IR(){
 
 std::string VarRefNode::TO_IR(){
 	//printf("FILE: %s, LINE: %d\n", __FILE__, __LINE__);
+
+	/*ThreeAC putVarInReg = ThreeAC();
+	if(isINTType){
+		putVarInReg.Fill("STOREI", ident, "", "!T"+std::to_string(availableTemp));
+		availableTemp++;
+	}else{
+		putVarInReg.Fill("STOREF", ident, "", "!T"+std::to_string(availableTemp));
+		availableTemp++;
+	}
+
+	IR.push_back(putVarInReg);
+	putVarInReg.Clear();*/
 
 	return this->ident;
 }
