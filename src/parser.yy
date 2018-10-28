@@ -21,9 +21,8 @@
   long long scope_iterator = 1;
   std::stack<SymbolTable*> ststack; 
   SymbolTable* global;
+  long long currentBlockID = 0;
 %}
-
-
 
 %token _PROGRAM _BEGIN _END _FUNCTION _READ _WRITE _IF _ELSE _ENDIF _WHILE _ENDWHILE _RETURN    
 %token _TRUE _FALSE _FOR _ENDFOR _CONTINUE _BREAK     _ASSIGN _NEQ _LEQ _GEQ
@@ -35,12 +34,19 @@
 %type <node> expr_prefix factor factor_prefix postfix_expr expr primary expr_list expr_list_tail call_expr addop mulop assign_expr
 %type <node> if_stmt stmt base_stmt loop_stmt read_stmt write_stmt control_stmt return_stmt assign_stmt else_part while_stmt func_decl
 %type <ast_list> stmt_list func_body func_declarations pgm_body 
+%type <jtype> compop
+%type <condition> cond
 
 %union{
   std::string* s;
   std::list<std::string> * str_list;
   ASTNode * node;
+  WhileNode * while_node;
+  IfNode * if_node;
+  ElseNode * else_node;
   std::list<ASTNode*> * ast_list;
+  JumpType * jtype;
+  Conditional * condition;
 }
 
 
@@ -56,7 +62,10 @@ program             : _PROGRAM id _BEGIN
                       //std::cout << $5->size() << std::endl;
                       for(auto func : *$5){
                         //std::cout << "balls" << std::endl;
-                        func -> TO_IR();
+                        if(func){
+                          //std::cout << "Func->TO_IR()" << std::endl;
+                          func -> TO_IR();
+                        }
                       }
                       //std::cout << "I guess we got through the IRs\n";
                     }
@@ -289,58 +298,101 @@ mulop               : _MUL  { $$ = new MulExprNode("*", ASTNodeType::MULT_EXPR);
 /* Complex Statements and Condition */ 
 if_stmt             : _IF _OPAREN cond _CPAREN decl
                     {
+                      currentBlockID = scope_iterator;
                       SymbolTable* tmp = new SymbolTable("BLOCK " + std::to_string(scope_iterator++), ststack.top());
                       ststack.top()->children.push_back(tmp);
                       ststack.push(tmp);
+                      $<if_node>$ = new IfNode($3->left_expr, $3->right_expr, currentBlockID, $3->jtype, ASTNodeType::IF);
                     }
                     stmt_list
                     {
                       ststack.pop();
                     } 
                     else_part _ENDIF  
-                    {               
-                      $$ = NULL;
-                    }
-                    ;
+                    {            
+                      //std::cout << "Stmt List Address: " << $7 << std::endl;
+                      //std::cout << "Else Address: " << $9 << std::endl;
+                      //if (!$7->empty()){
+                        $<if_node>6->copyStmtList(*$7);
+                      //}else if ($9 != NULL){
+                        $<if_node>6->copyElseNode( (ElseNode *) $9);
+                     // }
+                      $$ = $<if_node>6;
+                    };
 
 else_part           : _ELSE decl  
                     { 
-                      //std::cout << "Else Scope It: " << scope_iterator << std::endl;
+                      currentBlockID = scope_iterator;
                       SymbolTable* tmp = new SymbolTable("BLOCK " + std::to_string(scope_iterator++), ststack.top());
                       ststack.top()->children.push_back(tmp);
                       ststack.push(tmp);
+                      $<else_node>$ = new ElseNode(currentBlockID, ASTNodeType::ELSE);
                     } 
                     stmt_list  
                     {
                       ststack.pop();
+                      $<else_node>3->copyStmtList(*$4);
+                      $$ = $<else_node>3;
                     }
                     | %empty  { $$ = NULL; }
                     ;
 
 cond                : expr compop expr 
-                    | _TRUE 
+                                        { 
+                                          $$ = new Conditional();
+                                          $$->Fill($1, $3, *$2);
+                                        }
+                    | _TRUE
+                              {
+                                $$ = NULL;
+                                std::cout << "True cond found\n";
+                              }
                     | _FALSE
+                              {
+                                $$ = NULL;
+                                std::cout << "False cond found\n";
+                              }
                     ;
 
 compop              : _LT 
+                            {
+                              $$ = new JumpType(JumpType::L_T);
+                            }
                     | _GT 
+                            {
+                              $$ = new JumpType(JumpType::G_T);
+                            }
                     | _EQ 
+                            {
+                              $$ = new JumpType(JumpType::E_Q);
+                            }
                     | _NEQ 
+                            {
+                              $$ = new JumpType(JumpType::N_E);
+                            }
                     | _LEQ 
+                            {
+                              $$ = new JumpType(JumpType::L_E);
+                            }
                     | _GEQ
+                            {
+                              $$ = new JumpType(JumpType::G_E);
+                            }
                     ;
 
 while_stmt          : _WHILE _OPAREN cond _CPAREN decl 
                     { 
-                      // std::cout << "Else Scope It: " << scope_iterator << std::endl;
+                      currentBlockID = scope_iterator;
                       SymbolTable* tmp = new SymbolTable("BLOCK " + std::to_string(scope_iterator++), ststack.top());
                       ststack.top()->children.push_back(tmp);
                       ststack.push(tmp);
+                      $<while_node>$ = new WhileNode($3->left_expr, $3->right_expr, currentBlockID, $3->jtype, ASTNodeType::WHILE);
                     } 
                     stmt_list _ENDWHILE  
                     {  
                       ststack.pop(); 
-                      $$ = NULL;
+                      $<while_node>6->copyStmtList(*$7);
+                      $$ = $<while_node>6;
                     }
                     ;
 
