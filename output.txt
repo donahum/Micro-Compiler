@@ -1,66 +1,52 @@
-;IR code
-;LABEL FUNC_main  
-;LINK   
-;STOREI 20  !T0
-;STOREI !T0  a
-;STOREI 30  !T1
-;STOREI !T1  b
-;STOREI 40  !T2
-;STOREI !T2  c
-;MULI a b !T3
-;ADDI c !T3 !T4
-;MULI a b !T5
-;ADDI !T5 c !T6
-;DIVI !T6 a !T7
-;ADDI !T4 !T7 !T8
-;STOREI 20  !T9
-;ADDI !T8 !T9 !T10
-;STOREI !T10  c
-;MULI b b !T11
-;ADDI !T11 a !T12
-;STOREI !T12  b
-;MULI b a !T13
-;DIVI !T13 a !T14
-;STOREI !T14  a
-;WRITEI c  
-;WRITEI b  
-;WRITEI a  
-var a
-var b
-var c
-move 20 r0
-move r0 a
-move 30 r1
-move r1 b
-move 40 r2
-move r2 c
-move a r3
-muli b r3
-move c r4
-addi r3 r4
-move a r5
-muli b r5
-move r5 r6
-addi c r6
-move r6 r7
-divi a r7
-move r4 r8
-addi r7 r8
-move 20 r9
-move r8 r10
-addi r9 r10
-move r10 c
-move b r11
-muli b r11
-move r11 r12
-addi a r12
-move r12 b
-move b r13
-muli a r13
-move r13 r14
-divi a r14
-move r14 a
-sys writei  c
-sys writei  b
-sys writei  a
-sys halt
+Commit ID tagged for submission: 1b12c12b1d636c8cf25e975728ad9b9677596d41
+Submission graded at: 2018-10-27 21:46:49
+
+mkdir -p generated
+mkdir -p build
+flex -o generated/scanner.cpp src/scanner.ll
+bison -d -o generated/parser.cpp src/parser.yy
+g++ -std=c++0x -g -c -o build/parser.o generated/parser.cpp -static-libstdc++
+g++ -std=c++0x -g -c -o build/scanner.o generated/scanner.cpp -static-libstdc++
+g++ -std=c++0x -g -c -o build/main.o src/main.cpp -static-libstdc++
+g++ -std=c++0x -g -c -o build/SymbolTable.o src/SymbolTable.cpp -static-libstdc++
+g++ -std=c++0x -g -c -o build/Node.o src/Node.cpp -static-libstdc++
+g++ -std=c++0x -g -o Micro build/scanner.o build/parser.o build/main.o build/SymbolTable.o build/Node.o -static-libstdc++
+Testing..... step5_test3.micro
+Key output:
+ 2.72029 5
+
+
+Student output:
+ 2.72029 5
+
+
+Testing..... step5_test4.micro
+Key output:
+ 2.64575
+
+
+Student output:
+ 2.64575
+
+
+Testing..... step5_test1.micro
+Key output:
+ 73
+
+Student output:
+ 73
+
+Testing..... step5_test2.micro
+Key output:
+ 142123244
+
+Student output:
+ 142123244
+
+Testing..... step5_test5.micro
+Key output:
+ 91
+
+Student output:
+ 91
+
