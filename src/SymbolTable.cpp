@@ -48,4 +48,4 @@ std::string SymbolTable::getTypeFromID(std::string idName)
 	}
 
 	return NULL;
-}
+} 
