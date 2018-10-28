@@ -17,13 +17,26 @@ enum class ASTNodeType
 	FUNC,
 	ASSIGN,
 	WRITE,
-	READ
+	READ,
+	WHILE,
+	IF,
+	ELSE
 };
 
 enum class LiteralType
 {
 	isINT,
 	isFLOAT
+};
+
+enum class JumpType
+{
+	G_T,
+	G_E,
+	L_T,
+	L_E,
+	N_E,
+	E_Q
 };
 
 class ThreeAC{
@@ -55,7 +68,18 @@ public:
 	virtual std::string TO_IR() = 0;		
 };
 
-
+class Conditional{
+public:
+	ASTNode * left_expr;
+	ASTNode * right_expr;
+	JumpType jtype;
+	Conditional(){}
+	void Fill(ASTNode * left_expr_src, ASTNode * right_expr_src, JumpType jtype_src){
+		left_expr = left_expr_src;
+		right_expr = right_expr_src;
+		jtype = jtype_src;
+	}
+};
 
 class MulExprNode : public ASTNode
 {
@@ -131,6 +155,54 @@ public:
 	std::list<std::string> * ident_list2;
 	ReadNode(std::list<std::string> * str_list_src2, ASTNodeType type);
 	void printNode();
+	std::string TO_IR();
+};
+
+class WhileNode : public ASTNode
+{
+public:
+	JumpType jtype;
+	ASTNode * cond_node_left;
+	ASTNode * cond_node_right;
+	std::list<ASTNode *> stmt_nodes;
+	int blockID;
+	WhileNode(ASTNode * cond_node_left_src, ASTNode * cond_node_right_src, std::list<ASTNode *> stmt_nodes_src, int blockID_src, JumpType jtype, ASTNodeType type);
+	WhileNode(ASTNode * cond_node_left_src, ASTNode * cond_node_right_src, int blockID_src, JumpType jtype, ASTNodeType type);
+	void printNode();
+	void copyStmtList(std::list<ASTNode *> stmt_nodes_supplied);
+	std::string TO_IR();
+};
+
+class ElseNode : public ASTNode
+{
+public:
+	std::list<ASTNode *> stmt_nodes;
+	int blockID;
+	ElseNode(std::list<ASTNode *> stmt_nodes_src, int blockID_src, ASTNodeType type);
+	ElseNode(int blockID, ASTNodeType type);
+	ElseNode(ASTNodeType type);
+	void printNode();
+	void copyStmtList(std::list<ASTNode *> stmt_nodes_supplied);
+	void setBlockID(int blockID_supplied);
+	std::string TO_IR();
+};
+
+class IfNode : public ASTNode
+{
+public:
+	JumpType jtype;
+	ASTNode * cond_node_left;
+	ASTNode * cond_node_right;
+	ElseNode * else_node;
+	std::list<ASTNode *> stmt_nodes;
+	int blockID;
+	IfNode(ASTNode * cond_node_left_src, ASTNode * cond_node_right_src, std::list<ASTNode *> stmt_nodes_src, int blockID_src, JumpType jtype, ElseNode * else_node, ASTNodeType type);
+	IfNode(ASTNode * cond_node_left_src, ASTNode * cond_node_right_src, int blockID_src, JumpType jtype, ElseNode * else_node, ASTNodeType type);
+	IfNode(ASTNode * cond_node_left_src, ASTNode * cond_node_right_src, std::list<ASTNode *> stmt_nodes_src, int blockID_src, JumpType jtype, ASTNodeType type);
+	IfNode(ASTNode * cond_node_left_src, ASTNode * cond_node_right_src, int blockID_src, JumpType jtype, ASTNodeType type);
+	void printNode();
+	void copyStmtList(std::list<ASTNode *> stmt_nodes_supplied);
+	void copyElseNode(ElseNode * else_node_supplied);
 	std::string TO_IR();
 };
 
