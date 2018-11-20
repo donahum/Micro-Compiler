@@ -22,6 +22,7 @@
   std::stack<SymbolTable*> ststack; 
   SymbolTable* global;
   long long currentBlockID = 0;
+  //int slot_count = 1;
 %}
 
 %token _PROGRAM _BEGIN _END _FUNCTION _READ _WRITE _IF _ELSE _ENDIF _WHILE _ENDWHILE _RETURN    
@@ -31,11 +32,13 @@
 
 %type <s> id str var_type any_type
 %type <str_list> id_list id_tail 
-%type <node> expr_prefix factor factor_prefix postfix_expr expr primary expr_list expr_list_tail call_expr addop mulop assign_expr
+%type <node> expr_prefix factor factor_prefix postfix_expr expr primary call_expr addop mulop assign_expr
 %type <node> if_stmt stmt base_stmt loop_stmt read_stmt write_stmt control_stmt return_stmt assign_stmt else_part while_stmt func_decl
-%type <ast_list> stmt_list func_body func_declarations pgm_body 
+%type <ast_list> stmt_list func_body func_declarations pgm_body expr_list expr_list_tail
 %type <jtype> compop
 %type <condition> cond
+%type <ste_vec> param_decl_tail param_decl_list decl var_decl
+%type <ste> param_decl string_decl
 
 %union{
   std::string* s;
@@ -44,9 +47,13 @@
   WhileNode * while_node;
   IfNode * if_node;
   ElseNode * else_node;
-  std::list<ASTNode*> * ast_list;
+  std::vector<ASTNode*> * ast_list;
   JumpType * jtype;
   Conditional * condition;
+  //std::vector<FuncSTE> * func_ste_vec;
+  //FuncSTE * func_ste;
+  std::vector<SymbolTableEntry *> * ste_vec;
+  SymbolTableEntry * ste;
 }
 
 
@@ -57,36 +64,79 @@ program             : _PROGRAM id _BEGIN
                       global = new SymbolTable("GLOBAL", NULL);
                       ststack.push(global);
                     } pgm_body _END 
-                    {
-                      //global->printST();
-                      //std::cout << $5->size() << std::endl;
-                      for(auto func : *$5){
-                        //std::cout << "balls" << std::endl;
-                        if(func){
-                          //std::cout << "Func->TO_IR()" << std::endl;
-                          func -> TO_IR();
-                        }
-                      }
-                      //std::cout << "I guess we got through the IRs\n";
-                    }
+                                    {
+                                      for(auto func : *$5){
+                                        if(func){
+                                          func -> TO_IR(NULL);
+                                        }
+                                      }
+                                    }
                     ;
 
 id                  : _IDENTIFIER { $$ = new std::string(yytext);}
                     ;
 
-pgm_body            : decl func_declarations { $$ = $2; }
+pgm_body            : decl  { //ststack.top()->printST();
+                              for(auto entry : *$1)
+                              {
+                                  //std::cout << "adding to global " << entry->name << std::endl;
+                                  //entry->printSTE();
+                                  //std::cout << std::endl;
+                                  ststack.top()->addEntry(entry);
+                                  //entry->printSTE();
+                                  //std::cout << std::endl;
+                              }
+                              ststack.top()->numLocals = $1->size();
+                              //ststack.top()->printST();
+                            }
+
+                      func_declarations   { 
+                                            $$ = $3; 
+                                            for(auto funcST : *$3)
+                                            {
+                                              //static_cast<FuncNode *> (funcST)->table->printST();
+                                            }
+                                          }
                     ;
 
-decl                : string_decl decl
-                    | var_decl decl
-                    | %empty 
+decl                : string_decl decl  {//std::cout << "str decl\n";
+                                          $$ = $2;
+                                          /*for(auto entry : *$2)
+                                          {
+                                            $$->push_back(entry);
+                                          }*/
+                                          $$->push_back($1);
+                                          //$$->push_back(*$1);
+
+                                        }
+                    | var_decl decl   {//std::cout << "var decl\n";
+                                          $$ = $2;
+                                          //int i = 0;
+                                          //$$ = new std::vector<SymbolTableEntry>();
+                                          for(auto entry : *$1)
+                                          {
+                                            $$->push_back(entry);
+                                            //$$->insert($$->begin() + i, entry);
+                                            //i++;
+                                          }
+                                          /*for(auto entry : *$2)
+                                          {
+                                            $$->push_back(entry);
+                                          }*/
+                                      }
+                    | %empty  { //std::cout << "empty decl\n";
+                                $$ = new std::vector<SymbolTableEntry *>;
+                              }
                     ;
 
 /* Global String Declaration */
 string_decl         : _STRING id _ASSIGN str _SEMICOLON 
                     {
-                      SymbolTableEntry* tmp = new SymbolTableEntry(*$2, "STRING", *$4);
-                      ststack.top()->addEntry(tmp);
+                      SymbolTableEntry* tmp = new SymbolTableEntry(*$2, "STRING", *$4, 0);
+                      $$ = tmp;
+                      //tmp->printSTE();
+                      //std::cout<<std::endl;
+                      //ststack.top()->addEntry(tmp);
                     }
                     ;
 
@@ -97,10 +147,17 @@ str                 : _STRINGLITERAL  { $$ = new std::string(yytext);}
 
 var_decl            : var_type id_list _SEMICOLON 
                     { 
-                      for(auto &varName : *$2){
-                        SymbolTableEntry * varEntry = new SymbolTableEntry(varName, *$1);
-                        ststack.top()->addEntry(varEntry);
+                      $$ = new std::vector<SymbolTableEntry *>;
+                      //for(auto &varName : *$2){
+                      for(std::list<std::string>::reverse_iterator rit = $2->rbegin();  rit != $2->rend();  ++rit){
+                        //std::cout << "Var Name: " << varName << std::endl;
+                        SymbolTableEntry * varEntry = new SymbolTableEntry(*rit, *$1, 0);
+                        $$->push_back(varEntry);
+                        //ststack.top()->addEntry(varEntry);
+                        //varEntry->printSTE();
+                        //std::cout << std::endl;
                       }
+                      //$$ = var_entries;
                     }
                     ;  
 
@@ -128,28 +185,40 @@ id_tail             : _COMMA id id_tail
                     ;
 
 /* Function Paramater List */
-param_decl_list     : param_decl param_decl_tail
-                    | %empty      
+param_decl_list     : param_decl param_decl_tail  {
+                                                      $$ = $2;
+                                                      $$->insert($$->begin(), $1);
+                                                  }
+                    | %empty  {
+                                $$ = new std::vector<SymbolTableEntry *>;
+                              }
                     ;
 
 param_decl          : var_type id 
                     {
-                      SymbolTableEntry* tmp = new SymbolTableEntry(*$2, *$1);
-                      ststack.top()->addEntry(tmp);
+                      SymbolTableEntry * tmp = new SymbolTableEntry(*$2, *$1, 0);
+                      //ststack.top()->addEntry(tmp);
+                      $$ = tmp;
                     }
                     ;
 
-param_decl_tail     : _COMMA param_decl param_decl_tail
-                    | %empty
-                    ;
+param_decl_tail     : _COMMA param_decl param_decl_tail {
+                                                            $$ = $3;
+                                                            $$->insert($$->begin(), $2);
+                                                            //slot_count++;
+                                                        }
+                    | %empty  {
+                                  //slot_count = 1;
+                                  $$ = new std::vector<SymbolTableEntry *>;
+                              };
 
 /* Function Declarations */
 func_declarations   : func_decl func_declarations 
                     {
                       $$ = $2;
-                      $$->push_front($1);
+                      $$->insert($$->begin(), $1);
                     }  
-                    | %empty  {$$ = new std::list<ASTNode *>;}
+                    | %empty  {$$ = new std::vector<ASTNode *>;}
                     ;
 
 func_decl           : _FUNCTION any_type id _OPAREN 
@@ -158,23 +227,54 @@ func_decl           : _FUNCTION any_type id _OPAREN
                       ststack.top()->children.push_back(tmp);
                       ststack.push(tmp);
                     } 
-                    param_decl_list _CPAREN _BEGIN func_body _END   
+                    param_decl_list { //std::cout << "Printing func params...\n";
+                                      int i = 2;  //param slots start at 2, after return pc from link
+                                      for(auto param : *$6)
+                                      {
+                                        //param->slot = i - $6->size();
+                                        param->slot = i++;  
+                                        ststack.top()->addEntry(param);
+                                        //param->printSTE();
+                                        //i++;
+                                      }
+                                      //std::cout << "Param Size: " << $6->size() << std::endl;
+                                      ststack.top()->numParams = $6->size();
+                                    }
+                    _CPAREN _BEGIN func_body _END   
                     {
-                      $$ = new FuncNode(*$3, $9, ststack.top(), ASTNodeType::FUNC);
+                      //std::cout << "here's what the funcnode is getting...\n";
+                      //ststack.top()->printST();
+                      $$ = new FuncNode(*$3, $10, ststack.top(), ASTNodeType::FUNC);
                       ststack.pop();
                     }
                     ;
 
-func_body           : decl stmt_list  {$$ = $2;}
+func_body           : decl  {
+                              int i = 0;
+                              //std::cout << "Printing function locals\n";
+                              for(auto local : *$1)
+                              {
+                                //local->slot = i++;
+                                local->slot = i++ - $1->size();
+                                //local->printSTE();
+                                ststack.top()->addEntry(local);
+                                //std::cout<<std::endl;
+                              }
+                              //std::cout << "Local Size: " << $1->size() << std::endl;
+                              ststack.top()->numLocals = $1->size();
+                              //std::cout << "here's what the func_body is getting...\n";
+                              //ststack.top()->printST();
+                            }
+                      stmt_list  {$$ = $3;}
                     ;
 
 /* Statement List */
 stmt_list           : stmt stmt_list  
                     {   
                       $$ = $2;
-                      $$->push_front($1);
+                      $$->insert($$->begin(), $1);
                     }
-                    | %empty  {$$ = new std::list<ASTNode*>;}
+                    | %empty  {$$ = new std::vector<ASTNode*>;}
                     ;
 
 stmt                : base_stmt   {$$ = $1;}
@@ -207,7 +307,10 @@ read_stmt           : _READ _OPAREN id_list _CPAREN _SEMICOLON {$$ = new ReadNod
 write_stmt          : _WRITE _OPAREN id_list _CPAREN _SEMICOLON {$$ = new WriteNode($3, ASTNodeType::WRITE);}
                     ;
 
-return_stmt         : _RETURN expr _SEMICOLON{$$ = NULL;}
+return_stmt         : _RETURN expr _SEMICOLON {
+                                                $$ = new ReturnNode(ASTNodeType::RET);
+                                                $$->Right = $2;
+                                              }
                     ;
 
 /* Expressions */
@@ -267,18 +370,23 @@ factor_prefix       : factor_prefix postfix_expr mulop
                     ;
 
 postfix_expr        : primary   { $$ = $1;}
-                    | call_expr { $$ = NULL; }
+                    | call_expr { $$ = $1; }
                     ;
 
-call_expr           : id _OPAREN expr_list _CPAREN  {$$ = NULL;}
+call_expr           : id _OPAREN expr_list _CPAREN  {
+                                                      $$ = new CallNode($3, *$1, ASTNodeType::CALL_EXPR);
+                                                    }
                     ;
 
-expr_list           : expr expr_list_tail {$$ = NULL;}
-                    | %empty  { $$ = NULL; }
+expr_list           : expr expr_list_tail {
+                                            $$ = $2;   
+                                            $$->push_back($1);
+                                          }
+                    | %empty  { $$ = new std::vector<ASTNode *>; }
                     ;
 
-expr_list_tail      : _COMMA expr expr_list_tail  { $$ = NULL; }
-                    | %empty  { $$ = NULL; }
+expr_list_tail      : _COMMA expr expr_list_tail  { $$ = $3;  $$->push_back($2); }
+                    | %empty  { $$ = new std::vector<ASTNode *>; }
                     ;
 
 primary             : _OPAREN expr _CPAREN  { $$ = $2; }

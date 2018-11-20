@@ -32,7 +32,23 @@ int main(int argc, char **argv){
     yyparse();
 
     //print IR Code!
-    //std::cout << "\n\n;IR code" << std::endl;
+    std::cout << "\n\n;IR code" << std::endl;
+    //std::cout << ";PUSH" << std::endl;
+    //std::cout << ";JSR FUNC_main" << std::endl;
+    //std::cout << ";HALT" << std::endl;
+
+    ThreeAC main_tiny = ThreeAC();
+    main_tiny.Fill("HALT", "", "", "");
+    IR.insert(IR.begin(), main_tiny);
+    main_tiny.Clear();
+
+    main_tiny.Fill("JSR", "FUNC_main", "", "");
+    IR.insert(IR.begin(), main_tiny);
+    main_tiny.Clear();
+
+    main_tiny.Fill("PUSH", "", "", "");
+    IR.insert(IR.begin(), main_tiny);
+    main_tiny.Clear();
 
     for(std::vector<ThreeAC>::iterator it = IR.begin(); it != IR.end(); ++it)
     {
@@ -55,39 +71,86 @@ int main(int argc, char **argv){
         toTinyCode(*it);
     }
 
-    std::cout << "unlnk" << std::endl;
-    std::cout << "ret" << std::endl;
-
-    fclose(yyin);
+    //std::cout << "unlnk" << std::endl;
+    //std::cout << "ret" << std::endl;
+    
+    //fclose(yyin);
     
     return 0;
 }
 
+//intermediate representation code
 void printIR(ThreeAC toPrint)
 {
-    if(toPrint.opcode == "ADDI" || "ADDF" || "SUBI" || "SUBF" || "MULI" || "MULF" || "DIVI" || "DIVF"){
+    int i = 0;
+    if(toPrint.opcode == "ADDI"){
         std::cout << ";" << toPrint.opcode << " " << toPrint.op1 << " " << toPrint.op2 << " " << toPrint.result << std::endl;
-    }else if(toPrint.opcode == "STOREI" || "STOREF"){
+        i = 1;
+    }else if(toPrint.opcode == "ADDF"){
+        std::cout << ";" << toPrint.opcode << " " << toPrint.op1 << " " << toPrint.op2 << " " << toPrint.result << std::endl;
+        i = 2;
+    }else if(toPrint.opcode == "SUBI"){
+        std::cout << ";" << toPrint.opcode << " " << toPrint.op1 << " " << toPrint.op2 << " " << toPrint.result << std::endl;
+        i = 3;
+    }else if(toPrint.opcode == "SUBF"){
+        std::cout << ";" << toPrint.opcode << " " << toPrint.op1 << " " << toPrint.op2 << " " << toPrint.result << std::endl;
+        i = 4;
+    }else if(toPrint.opcode == "MULI"){
+        std::cout << ";" << toPrint.opcode << " " << toPrint.op1 << " " << toPrint.op2 << " " << toPrint.result << std::endl;
+        i = 5;
+    }else if(toPrint.opcode == "MULF"){
+        std::cout << ";" << toPrint.opcode << " " << toPrint.op1 << " " << toPrint.op2 << " " << toPrint.result << std::endl;
+        i = 6;
+    }else if(toPrint.opcode == "DIVI"){
+        std::cout << ";" << toPrint.opcode << " " << toPrint.op1 << " " << toPrint.op2 << " " << toPrint.result << std::endl;
+        i = 7;
+    }else if(toPrint.opcode == "DIVF"){
+        std::cout << ";" << toPrint.opcode << " " << toPrint.op1 << " " << toPrint.op2 << " " << toPrint.result << std::endl;
+        i = 8;
+    }else if(toPrint.opcode == "STOREI"){
         std::cout << ";" << toPrint.opcode << " " << toPrint.op1 << " " << toPrint.result << std::endl;
-    }else if(toPrint.opcode == "READI" || "READF"){
+        i = 9;
+    }else if(toPrint.opcode == "STOREF"){
+        std::cout << ";" << toPrint.opcode << " " << toPrint.op1 << " " << toPrint.result << std::endl;
+        i = 10;
+    }else if(toPrint.opcode == "READI"){
         std::cout << ";" << toPrint.opcode <<  " " << toPrint.result << std::endl;
+        i = 11;
+    }else if(toPrint.opcode == "READF"){
+        std::cout << ";" << toPrint.opcode <<  " " << toPrint.result << std::endl;
+        i = 12;
     }else if(toPrint.opcode == "LABEL"){
         std::cout << ";" << toPrint.opcode <<  " " << toPrint.op1 << std::endl;
+        i = 13;
     }else if(toPrint.opcode == "LINK"){
-        std::cout << ";" << toPrint.opcode << toPrint.op1 << std::endl;
+        std::cout << ";" << toPrint.opcode << " " << toPrint.op1 << std::endl;
+        i = 14;
     }else if(toPrint.opcode == "PUSH"){
-        std::cout << ";" << toPrint.opcode << std::endl;
+        std::cout << ";" << toPrint.opcode << " " << toPrint.op1 << std::endl;
+        i = 15;
     }else if(toPrint.opcode == "PUSHREGS"){
         std::cout << ";" << toPrint.opcode << std::endl;
+        i = 16;
     }else if(toPrint.opcode == "JSR"){
         std::cout << ";" << toPrint.opcode << " " << toPrint.op1 << std::endl;
+        i = 17;
     }else if(toPrint.opcode == "HALT"){
         std::cout << ";" << toPrint.opcode << std::endl;
+        i = 18;
+    }else if(toPrint.opcode == "UNLINK"){
+        std::cout << ";" << toPrint.opcode << std::endl;
+        i = 19;
+    }else if(toPrint.opcode == "RET"){
+        std::cout << ";" << toPrint.opcode << std::endl;
+        i = 20;
     }else{  //writes
-        std::cout << ";" << toPrint.opcode <<  " " << toPrint.op1 << std::endl;
+        std::cout << ";" << toPrint.opcode <<  " " << toPrint.op1 << " " << toPrint.op2 << " " << toPrint.result << std::endl;
+        i = 21;
     }
+    //std::cout << ";Test case: " << i << std::endl;
 }
 
+//Tiny Assembler code
 void toTinyCode(ThreeAC toTiny)
 {
         if(toTiny.opcode ==  "LEI"){
@@ -145,18 +208,19 @@ void toTinyCode(ThreeAC toTiny)
             std::cout << "label " << formatTemp(toTiny.op1) << std::endl;
         }
         else if(toTiny.opcode == "LINK"){
-            std::cout << "link 1" <<std::endl;
+            std::cout << "link " << toTiny.op1 <<std::endl;
         }
         else if(toTiny.opcode == "PUSH" && toTiny.opcode != "PUSHREGS"){
-            std::cout << "push" << std::endl;
+            std::cout << "push " << formatTemp(toTiny.op1) << std::endl;
         }
         else if(toTiny.opcode == "JSR"){
-            std::cout << "jsr " << formatTemp(toTiny.op1) << std::endl;
+            std::cout << "jsr " << toTiny.op1 << std::endl;
         }
         else if(toTiny.opcode == "HALT"){
             std::cout << "sys halt" << std::endl;
-        }
-        else if(toTiny.opcode == "STOREI" || toTiny.opcode == "STOREF"){
+        }else if(toTiny.opcode == "STOREI"){
+            std::cout << "move " << formatTemp(toTiny.op1) << " " << formatTemp(toTiny.result) << std::endl;
+        }else if(toTiny.opcode == "STOREF"){
             std::cout << "move " << formatTemp(toTiny.op1) << " " << formatTemp(toTiny.result) << std::endl;
         }else if(toTiny.opcode == "MULI"){
             std::cout << "move " << formatTemp(toTiny.op1) << " " << formatTemp(toTiny.result) << std::endl;
@@ -193,8 +257,16 @@ void toTinyCode(ThreeAC toTiny)
         }else if(toTiny.opcode == "READF"){
             std::cout << "sys readr  " << formatTemp(toTiny.result) << std::endl;
         }
+        else if(toTiny.opcode == "UNLINK"){
+            std::cout << "unlnk"  << std::endl;
+        }else if(toTiny.opcode == "RET"){
+            std::cout << "ret" << std::endl;
+        }else if(toTiny.opcode == "POP"){
+            std::cout << "pop " << formatTemp(toTiny.result) << std::endl;
+        }
 }
 
+//converts any temporaries into registers
 std::string formatTemp(std::string couldBeTmp)
 {
     std::string returnStr = couldBeTmp;
