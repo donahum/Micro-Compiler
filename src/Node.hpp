@@ -46,6 +46,7 @@ class ThreeAC{
 public:
 	std::string opcode, op1, op2, result;
 	ThreeAC(){}
+	
 	void Fill(std::string o, std::string o1, std::string o2, std::string o3){
 		opcode = o;
 		op1 =o1;
@@ -229,4 +230,3 @@ public:
 };
 
 #endif ///__NODE_H
-
