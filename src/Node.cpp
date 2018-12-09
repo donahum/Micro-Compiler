@@ -327,6 +327,7 @@ std::string FuncNode::TO_IR(SymbolTable * funcTable){
 	for(auto stmt : *node_list){
 		if(stmt)
 		{
+			availableTemp = 0;
 			//std::cout << "Func stmt->TO_IR()" << std::endl;
 			stmt->TO_IR(this->table);
 		}
@@ -349,10 +350,6 @@ std::string CallNode::TO_IR(SymbolTable * funcTable){
 	ThreeAC pushParams = ThreeAC();
 
 	//push return slot onto stack
-	/*pushParams.Fill("PUSH", "", "", "");
-	IR.push_back(pushParams);
-	pushParams.Clear();*/
-
 	typename std::map<std::string, SymbolTableEntry *>::iterator map_it;
 	std::string var_location = "";
 
@@ -403,6 +400,9 @@ std::string CallNode::TO_IR(SymbolTable * funcTable){
 	availableTemp++;
 	IR.push_back(pushParams);
 
+	//WATCH OUT FOR THIS LINE
+	availableTemp = 0;
+
 	return popped_reg;
 }
 
@@ -411,7 +411,12 @@ std::string ReturnNode::TO_IR(SymbolTable * funcTable){
 	std::string location = this->Right->TO_IR(funcTable);
 	std::string return_slot = "$";
 	ThreeAC newReturn = ThreeAC();
-	if(this->Right == NULL)
+	
+	if(funcTable->scope == "main")
+	{
+		
+	}
+	else if(this->Right == NULL)
 	{
 		//empty return
 		return "";
@@ -480,6 +485,9 @@ std::string ReturnNode::TO_IR(SymbolTable * funcTable){
 	newReturn.Fill("RET", "", "", "");
 	IR.push_back(newReturn);
 	newReturn.Clear();
+
+	//availableTemp = 0;
+
 	return "";
 }
 
@@ -514,7 +522,10 @@ std::string AssignNode::TO_IR(SymbolTable * funcTable){
 			//found entry in func scope
 			lookup_slot += "$";
 			lookup_slot += std::to_string(funcTable->table.at(idKey)->slot);
+		}else{
+			lookup_slot += idKey;
 		}
+
 		if(isINTType){
 			newAssign.Fill("STOREI", targetTmpy, "", lookup_slot);
 		}else{
@@ -533,6 +544,8 @@ std::string AssignNode::TO_IR(SymbolTable * funcTable){
 			//found entry in func scope
 			lookup_slot += "$";
 			lookup_slot += std::to_string(funcTable->table.at(targetTmpy)->slot);
+		}else{
+			lookup_slot += targetTmpy;
 		}
 
 		//get a new tmpy
@@ -559,6 +572,11 @@ std::string AssignNode::TO_IR(SymbolTable * funcTable){
 			lookup_slot += "$";
 			lookup_slot += std::to_string(funcTable->table.at(idKey)->slot);
 		}
+		else
+		{
+			lookup_slot += idKey;
+		}
+
 		//store tmpy into left ref's stack slot
 		if(isINTType){
 			newAssign.Fill("STOREI", tmp, "", lookup_slot);
@@ -568,7 +586,7 @@ std::string AssignNode::TO_IR(SymbolTable * funcTable){
 		IR.push_back(newAssign);
 		newAssign.Clear();
 	}else{
-		//storing only a literal, returned from LitNode::TO_IR
+		//storing any type of expression on the right
 		//get lookup slot for left ref
 		map_it = funcTable->table.find(idKey);
 		lookup_slot = "";
@@ -578,6 +596,8 @@ std::string AssignNode::TO_IR(SymbolTable * funcTable){
 			//found entry in func scope
 			lookup_slot += "$";
 			lookup_slot += std::to_string(funcTable->table.at(idKey)->slot);
+		}else{
+			lookup_slot += idKey;
 		}
 
 		//store tmpy into left ref's stack slot
@@ -616,6 +636,10 @@ std::string IfNode::TO_IR(SymbolTable * funcTable){
 		//found entry in func scope
 		return_slot_left += "$";
 		return_slot_left += std::to_string(funcTable->table.at(leftIdent)->slot);
+	}
+	else
+	{
+		return_slot_left += leftIdent;
 	}
 
 	std::string leftLocation = return_slot_left;
@@ -723,6 +747,7 @@ std::string IfNode::TO_IR(SymbolTable * funcTable){
 	for(auto stmt : stmt_nodes){
 		if(stmt)
 		{	
+			availableTemp = 0;
 			//std::cout << "if stmts->TO_IR()" << std::endl;
 			stmt->TO_IR(funcTable);
 		}
@@ -767,6 +792,7 @@ std::string ElseNode::TO_IR(SymbolTable * funcTable){
 	for(auto stmt : this->stmt_nodes){
 		if(stmt)
 		{
+			availableTemp = 0;
 			//std::cout << "else stmt->TO_IR()" << std::endl;
 			stmt->TO_IR(funcTable);
 		}
@@ -802,6 +828,10 @@ std::string WhileNode::TO_IR(SymbolTable * funcTable){
 		return_slot_left += "$";
 		return_slot_left += std::to_string(funcTable->table.at(leftIdent)->slot);
 	}
+	else
+	{
+		return_slot_left += leftIdent;
+	}
 
 	map_it = funcTable->table.find(rightIdent);
 	std::string return_slot_right = "";
@@ -816,7 +846,7 @@ std::string WhileNode::TO_IR(SymbolTable * funcTable){
 		return_slot_right = rightIdent;
 	}
 
-	if( (this->cond_node_left->Type == ASTNodeType::VAR_REF) && (this->cond_node_right->Type == ASTNodeType::VAR_REF) )
+	if( /*(this->cond_node_left->Type == ASTNodeType::VAR_REF) &&*/ (this->cond_node_right->Type == ASTNodeType::VAR_REF) )
 	{
 		ThreeAC putVarInReg = ThreeAC();
 		if(isINTType){
@@ -835,7 +865,61 @@ std::string WhileNode::TO_IR(SymbolTable * funcTable){
 		rightRef = return_slot_right;
 	}
 
-	if(funcTable->getTypeFromID(leftIdent) == "INT")
+	if(funcTable->getTypeFromID(leftIdent) == "SHIT")
+	{
+		if(funcTable->getTypeFromID(rightIdent) == "INT")
+		{
+			switch(jtype)
+			{
+				case JumpType::G_T:	
+					
+					branch_stmt->Fill("LEI", return_slot_left, rightRef, while_end);
+					break;
+				case JumpType::G_E:
+					branch_stmt->Fill("LTI", return_slot_left, rightRef, while_end);
+					break;
+				case JumpType::L_T:
+					branch_stmt->Fill("GEI", return_slot_left, rightRef, while_end);
+					break;
+				case JumpType::L_E:
+					branch_stmt->Fill("GTI", return_slot_left, rightRef, while_end);
+					break;
+				case JumpType::N_E:
+					branch_stmt->Fill("EQI", return_slot_left, rightRef, while_end);
+					break;
+				case JumpType::E_Q:
+					branch_stmt->Fill("NEI", return_slot_left, rightRef, while_end);
+					break;
+				default:
+					std::cout << "There's some branching error here\n";
+			}
+		}else{
+			switch(jtype)
+		{
+			case JumpType::G_T:	
+				branch_stmt->Fill("LEF", return_slot_left, rightRef, while_end);
+				break;
+			case JumpType::G_E:
+				branch_stmt->Fill("LTF", return_slot_left, rightRef, while_end);
+				break;
+			case JumpType::L_T:
+				branch_stmt->Fill("GEF", return_slot_left, rightRef, while_end);
+				break;
+			case JumpType::L_E:
+				branch_stmt->Fill("GTF", return_slot_left, rightRef, while_end);
+				break;
+			case JumpType::N_E:
+				branch_stmt->Fill("EQF", return_slot_left, rightRef, while_end);
+				break;
+			case JumpType::E_Q:
+				branch_stmt->Fill("NEF", return_slot_left, rightRef, while_end);
+				break;
+			default:
+				std::cout << "There's some branching error here\n";
+		}
+		}
+	}
+	else if(funcTable->getTypeFromID(leftIdent) == "INT")
 	{
 		switch(jtype)
 		{
@@ -894,6 +978,7 @@ std::string WhileNode::TO_IR(SymbolTable * funcTable){
 	for(auto stmt : stmt_nodes){
 		if(stmt)
 		{
+			availableTemp = 0;
 			//std::cout << "while stmt->TO_IR()" << std::endl;
 			stmt->TO_IR(funcTable);
 		}
@@ -922,6 +1007,9 @@ std::string WriteNode::TO_IR(SymbolTable * funcTable){
 	for(std::list<std::string>::const_iterator i = this->ident_list->begin(); i != this->ident_list->end(); i++)	
 	{
 		write_slot = "";
+		//std::cout << ";\t" << *i << std::endl;
+		//std::cout << ";\t" << funcTable->getTypeFromID(*i) << std::endl;
+
 		if(funcTable->getTypeFromID(*i) == "STRING")
 		{
 			isString = 1;
@@ -993,6 +1081,7 @@ std::string ReadNode::TO_IR(SymbolTable * funcTable){
 			currRead.Fill("READF", "", "", read_slot);
 		}
 		IR.push_back(currRead);
+		read_slot = "";
 		currRead.Clear();
 	}
 
@@ -1060,6 +1149,10 @@ std::string AddExprNode::TO_IR(SymbolTable * funcTable){
 			left_slot += "$";
 			left_slot += std::to_string(funcTable->table.at(leftTmpy)->slot);
 		}
+		else
+		{
+			left_slot += leftTmpy;
+		}
 	}
 
 	if(this->Right->Type == ASTNodeType::VAR_REF){
@@ -1071,6 +1164,10 @@ std::string AddExprNode::TO_IR(SymbolTable * funcTable){
 			//found entry in func scope
 			right_slot += "$";
 			right_slot += std::to_string(funcTable->table.at(rightTmpy)->slot);
+		}
+		else
+		{
+			right_slot += rightTmpy;
 		}
 	}
 
@@ -1160,6 +1257,10 @@ std::string MulExprNode::TO_IR(SymbolTable * funcTable){
 			left_slot += "$";
 			left_slot += std::to_string(funcTable->table.at(leftTmpry)->slot);
 		}
+		else
+		{
+			left_slot += leftTmpry;
+		}
 	}
 
 	if(this->Right->Type == ASTNodeType::VAR_REF){
@@ -1171,6 +1272,10 @@ std::string MulExprNode::TO_IR(SymbolTable * funcTable){
 			//found entry in func scope
 			right_slot += "$";
 			right_slot += std::to_string(funcTable->table.at(rightTmpry)->slot);
+		}
+		else
+		{
+			right_slot += rightTmpry;
 		}
 	}
 

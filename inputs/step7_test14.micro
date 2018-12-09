@@ -21,5 +21,6 @@ PROGRAM test BEGIN
 		a := function1();
 		c := function2();
 		c:=a+b;
+		WRITE(c);
 	END
 END

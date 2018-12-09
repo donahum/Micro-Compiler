@@ -380,12 +380,12 @@ call_expr           : id _OPAREN expr_list _CPAREN  {
 
 expr_list           : expr expr_list_tail {
                                             $$ = $2;   
-                                            $$->push_back($1);
+                                            $$->insert($$->begin(), $1);
                                           }
                     | %empty  { $$ = new std::vector<ASTNode *>; }
                     ;
 
-expr_list_tail      : _COMMA expr expr_list_tail  { $$ = $3;  $$->push_back($2); }
+expr_list_tail      : _COMMA expr expr_list_tail  { $$ = $3;  $$->insert($$->begin(), $2); }
                     | %empty  { $$ = new std::vector<ASTNode *>; }
                     ;
 

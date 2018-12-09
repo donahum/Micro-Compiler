@@ -69,7 +69,16 @@ void SymbolTable::printST(){
 
 std::string SymbolTable::getTypeFromID(std::string idName)
 {
+	//std::cout << idName << std::endl;
+
+    std::string tmpForm = "!T";
+    if(idName.find("!T") != std::string::npos)
+    {
+        return "SHIT";
+   	}
+
 	if(table.find(idName) == table.end()){
+		//not found in current table
 		SymbolTable * parentTable = this->parent;
 		while(parentTable != NULL)
 		{
@@ -77,13 +86,14 @@ std::string SymbolTable::getTypeFromID(std::string idName)
 				parentTable = parentTable->parent;
 			}else{
 				return parentTable->table.at(idName)->type;
+				//return "SHIT";
 			}
 		}
 	}else{
 		return table.at(idName)->type;
 	}
 
-	return NULL;
+	//return "SHIT";
 } 
 
 int SymbolTable::getSlotFromID(std::string idName)

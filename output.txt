@@ -1,0 +1,138 @@
+
+
+;IR code
+;PUSH 
+;JSR FUNC_main
+;HALT
+;LABEL FUNC_printout
+;LINK 0
+;WRITES a1  
+;WRITEI $2  
+;WRITES eol  
+;WRITES a2  
+;WRITEI $3  
+;WRITES eol  
+;WRITES a3  
+;WRITEI $4  
+;WRITES eol  
+;STOREI 0 !T0
+;STOREI !T0 $5
+;UNLINK
+;RET
+;UNLINK
+;RET
+;LABEL FUNC_main
+;LINK 0
+;READI a
+;READI b
+;READI c
+;STOREI 0 !T0
+;STOREI !T0 j
+;STOREI b !T0
+;NEI a !T0 ELSE_1
+;STOREI 0 !T0
+;STOREI !T0 h
+;JUMP END_IF_ELSE_1  
+;LABEL ELSE_1
+;LABEL WHILE_START_3
+;STOREI 10 !T0
+;GTI j !T0 WHILE_END_3
+;STOREI j !T0
+;STOREI !T0 a
+;STOREI 1 !T0
+;ADDI j !T0 !T1
+;STOREI !T1 j
+;JUMP WHILE_START_3  
+;LABEL WHILE_END_3
+;LABEL END_IF_ELSE_1
+;PUSH 
+;PUSH j
+;PUSH b
+;PUSH a
+;JSR FUNC_printout
+;POP   
+;POP   
+;POP   
+;POP   !T0
+;STOREI !T0 c
+;ADDI a b !T0
+;UNLINK
+;RET
+;UNLINK
+;RET
+var k
+var j
+var h
+var z
+var y
+var x
+var c
+var b
+var a
+str a3 "C: "
+str a2 "B: "
+str a1 "A: "
+str eol "\n"
+push 
+jsr FUNC_main
+sys halt
+label FUNC_printout
+link 0
+sys writes  a1
+sys writei  $2
+sys writes  eol
+sys writes  a2
+sys writei  $3
+sys writes  eol
+sys writes  a3
+sys writei  $4
+sys writes  eol
+move 0 r0
+move r0 $5
+unlnk
+ret
+unlnk
+ret
+label FUNC_main
+link 0
+sys readi  a
+sys readi  b
+sys readi  c
+move 0 r0
+move r0 j
+move b r0
+cmpi a r0
+jne ELSE_1
+move 0 r0
+move r0 h
+jmp END_IF_ELSE_1
+label ELSE_1
+label WHILE_START_3
+move 10 r0
+cmpi j r0
+jgt WHILE_END_3
+move j r0
+move r0 a
+move 1 r0
+move j r1
+addi r0 r1
+move r1 j
+jmp WHILE_START_3
+label WHILE_END_3
+label END_IF_ELSE_1
+push 
+push j
+push b
+push a
+jsr FUNC_printout
+pop 
+pop 
+pop 
+pop r0
+move r0 c
+move a r0
+addi b r0
+unlnk
+ret
+unlnk
+ret

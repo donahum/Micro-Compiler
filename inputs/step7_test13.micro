@@ -1,11 +1,15 @@
 PROGRAM test
 BEGIN
+	STRING eol := "\n";
+	STRING a1 := "A: ";
+	STRING a2 := "B: ";
+	STRING a3 := "C: ";
 	INT a,b,c,x,y,z,h,j,k;
 	FUNCTION INT printout (INT a,INT b,INT c)
 	BEGIN
-		WRITE (a);
-		WRITE (b);
-		WRITE (c);
+		WRITE (a1, a, eol);
+		WRITE (a2, b, eol);
+		WRITE (a3, c, eol);
 		RETURN 0;
 	END
   	

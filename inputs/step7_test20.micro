@@ -30,6 +30,5 @@ BEGIN
 		
 		WRITE(t);
 		WRITE(newline);
-	
 	END
 END

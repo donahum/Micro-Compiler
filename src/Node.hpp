@@ -42,6 +42,65 @@ enum class JumpType
 	E_Q
 };
 
+/*class RegisterFile
+{
+public:
+	std::vector<Register> regs;
+	std::map<std::string, int> regMap;
+
+	RegisterFile(){
+		for(int i = 0; i < 4; i++)
+		{
+			Register newReg = Register(i);
+			regs.push_back(newReg);
+		}
+	}
+
+	int assignReg(std::string varName){
+
+	}
+
+	void deleteReg(std::string varName)
+	{	
+		int regIndex = getRegNum(varName);
+		if(regIndex != -1){
+			regMap.erase(varName);
+			regs.at(regIndex).Clear();
+		}
+	}
+
+	int getRegNum(std::string varName){
+		if(regMap.find(varName) != regMap.end())
+		{
+			return regMap.at(varName).index;
+		}else{
+			return -1;
+		}
+	}
+};
+
+class Register
+{
+public:
+	std::string alias;
+	int index;
+	bool isFree;
+	bool isDirty;
+
+	Register(int i){
+		alias = "";
+		index = i;
+		isFree = true;
+		isDirty = false;
+	}
+
+	void Clear(){
+		alias = "";
+		isFree = true;
+		isDirty = false;
+	}
+};*/
+
 class ThreeAC{
 public:
 	std::string opcode, op1, op2, result;

@@ -58,11 +58,13 @@ int main(int argc, char **argv){
     //print Tiny Code!
     //print var declarations first (all global for this step)
     SymbolTable * stackTop = ststack.top();
-    for(auto ste : stackTop->ordered_table){
-        if(ste->type == "STRING"){
-            std::cout << "str " << ste->name << " " << ste->value << std::endl;
+    std::vector<SymbolTableEntry *>::iterator rit = stackTop->ordered_table.begin();
+    for(; rit != stackTop->ordered_table.end(); ++rit){
+    //for(auto ste : stackTop->ordered_table){
+        if((*rit)->type == "STRING"){
+            std::cout << "str " << (*rit)->name << " " << (*rit)->value << std::endl;
         }else{
-            std::cout << "var " << ste->name << std::endl;
+            std::cout << "var " << (*rit)->name << std::endl;
         }
     }
 

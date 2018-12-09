@@ -14,18 +14,23 @@ public:
 	SymbolTableEntry(std::string nm, std::string tp, std::string val, int slt);
 	SymbolTableEntry(std::string nm, std::string tp);
 	SymbolTableEntry(std::string nm, std::string tp, int slt);
+
 	std::string name;
 	std::string type;
 	std::string value;
 	int slot;
+
 	void printSTE();///print the symbol
 };
 
 class SymbolTable
 {
 public:
+	SymbolTable(std::string s, SymbolTable* p);
+
 	std::map<std::string, SymbolTableEntry*> table;
 	std::vector<SymbolTableEntry*> ordered_table;
+
 	SymbolTable* parent;
 	std::vector<SymbolTable*> children;
 	std::string scope; 
@@ -33,7 +38,6 @@ public:
 	int numParams;
 	int numLocals;
 
-	SymbolTable(std::string s, SymbolTable* p);
 	void addEntry(SymbolTableEntry * newEntry);
 	std::string getTypeFromID(std::string idName);
 	int getSlotFromID(std::string idName);
