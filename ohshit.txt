@@ -1,5 +1,0 @@
-mkdir -p generated
-mkdir -p build
-flex -o generated/scanner.cpp src/scanner.ll
-bison -d -o generated/parser.cpp src/parser.yy
-g++ -std=c++0x -g -c -o build/parser.o generated/parser.cpp -static-libstdc++
