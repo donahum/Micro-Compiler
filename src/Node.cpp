@@ -1,152 +1,59 @@
 
 #include "Node.hpp"
 
-int availableTemp = 0;
+int currentReg = 0;
 int isINTType = 0;//1 for int, 0 for float
 ThreeAC toInsert;
 std::vector<ThreeAC> IR;
 extern std::stack<SymbolTable*> ststack; 
 
-void ASTNode::printNode()
-{
-	std::cout << "Type: ";
-	printNodeType();
-}
+//vector to track what registers need to be preserved
+//0 = free, 1 = preserved
+std::vector<int> lockArray {0, 0, 0, 0};
 
-void WriteNode::printNode()
+void clearLockArray()
 {
-	std::cout << "Type: ";
-	printNodeType();
-}
-
-void ASTNode::printNodeType()
-{
-	if(Type == ASTNodeType::UNDEFINED)
+	for(auto &reg : lockArray)
 	{
-		std::cout << "UNDEFINED" << std::endl;
-	}else if(Type == ASTNodeType::ADD_EXPR){
-		std::cout << "ADD_EXPR" << std::endl;
-	}else if(Type == ASTNodeType::MULT_EXPR){
-		std::cout << "MULT_EXPR" << std::endl;
-	}else if(Type == ASTNodeType::VAR_REF){
-		std::cout << "VAR_REF" << std::endl;
-	}else if(Type == ASTNodeType::FUNC){
-		std::cout << "FUNC" << std::endl;
-	}else if(Type == ASTNodeType::ASSIGN){
-		std::cout << "ASSIGN" << std::endl;
-	}else if(Type == ASTNodeType::WRITE){
-		std::cout << "WRITE" << std::endl;
-	}else{
-		std::cout << "LITERAL" << std::endl;
+		reg = 0;
 	}
 }
 
-void ASTNode::printTree()
+void freeTemporary(std::string tmp)
 {
-	if(this == NULL)
-	{
-		return;
+	std::string returnStr = tmp;
+    std::string tmpForm = "!T";
+
+    int regIndex = -1;
+
+    if(returnStr.find("!T") != std::string::npos)
+    {
+    	//this is indeed a register
+        returnStr.replace(returnStr.find(tmpForm), tmpForm.length(), "");
+        regIndex = std::stoi(returnStr);
+        lockArray[regIndex] = 0;
+    }else{
+        //this is a memory location, not a register
+    }
+}
+
+int generateTemporary()
+{
+	if(lockArray[0] == 0){
+		lockArray[0] = 1;
+		return 0;
+	}else if(lockArray[1] == 0){
+		lockArray[1] = 1;
+		return 1;
+	}else if(lockArray[2] == 0){
+		lockArray[2] = 1;
+		return 2;
+	}else if(lockArray[3] == 0){
+		lockArray[3] = 1;
+		return 3;
 	}
-	else
-	{
-		this->printNode();
-		if(this->Left != NULL)
-		{
-			this->Left->printTree();
-		}
-		if(this->Right != NULL)
-		{
-			this->Right->printTree();
-		}
-	}
-}
 
-void AddExprNode::printNode()
-{
-	std::cout << "Type: ";
-	printNodeType();
-	std::cout << "Op: " << add_op << std::endl;
-}
-
-void MulExprNode::printNode()
-{
-	std::cout << "Type: ";
-	printNodeType();
-	std::cout << "Op: " << mul_op << std::endl;
-}
-
-void VarRefNode::printNode()
-{
-	std::cout << "Type: ";
-	printNodeType();
-}
-
-void LiteralNode::printNode()
-{
-	std::cout << "Type: ";
-	printNodeType();
-	std::cout << "litType: ";
-	printLitType();
-}
-
-void FuncNode::printNode()
-{
-	std::cout << "Type: ";
-	printNodeType();
-}
-
-void AssignNode::printNode()
-{
-	std::cout << "Type: ";
-	printNodeType();
-	//std::cout << "Var Ref for Assign: ";
-	//var_node->printNode();
-}
-
-void LiteralNode::printLitType()
-{
-	if(litType == LiteralType::isINT)
-	{
-		std::cout << "isINT" << std::endl;
-	}else {
-		std::cout << "isFLOAT" << std::endl;
-	}
-}
-
-void ReadNode::printNode()
-{
-	std::cout << "Type: ";
-	printNodeType();
-}
-
-void WhileNode::printNode()
-{
-	std::cout << "Type: ";
-	printNodeType();
-}
-
-void IfNode::printNode()
-{
-	std::cout << "Type: ";
-	printNodeType();
-}
-
-void ElseNode::printNode()
-{
-	std::cout << "Type: ";
-	printNodeType();
-}
-
-void CallNode::printNode()
-{
-	std::cout << "Type: ";
-	printNodeType();
-}
-
-void ReturnNode::printNode()
-{
-	std::cout << "Type: ";
-	printNodeType();
+	return NULL;
 }
 
 MulExprNode::MulExprNode(std::string inputOp, ASTNodeType type) : ASTNode::ASTNode(type){
@@ -327,7 +234,8 @@ std::string FuncNode::TO_IR(SymbolTable * funcTable){
 	for(auto stmt : *node_list){
 		if(stmt)
 		{
-			availableTemp = 0;
+			//availableTemp = 0;
+			clearLockArray();
 			//std::cout << "Func stmt->TO_IR()" << std::endl;
 			stmt->TO_IR(this->table);
 		}
@@ -395,13 +303,13 @@ std::string CallNode::TO_IR(SymbolTable * funcTable){
 
 	//pop return value off stack into reg
 	pushParams.Clear();
-	std::string popped_reg = "!T"+std::to_string(availableTemp);
+	currentReg = generateTemporary();
+	std::string popped_reg = "!T"+std::to_string(currentReg);
 	pushParams.Fill("POP", "", "", popped_reg);
-	availableTemp++;
 	IR.push_back(pushParams);
 
 	//WATCH OUT FOR THIS LINE
-	availableTemp = 0;
+	clearLockArray();
 
 	return popped_reg;
 }
@@ -414,67 +322,61 @@ std::string ReturnNode::TO_IR(SymbolTable * funcTable){
 	
 	if(funcTable->scope == "main")
 	{
-		
-	}
-	else if(this->Right == NULL)
-	{
-		//empty return
-		return "";
-	}
-	else if(this->Right->Type == ASTNodeType::LITERAL)
-	{
-		//literal
-		return_slot += std::to_string(funcTable->numParams + 2);	//= num params + ret pc + ret val offsets
-		//std::cout << "Return Slot: " << return_slot << std::endl;
-		//if(isINTType){
-			newReturn.Fill("STOREI", location, "", return_slot);
-		//}else{
-		//	newReturn.Fill("STOREF", location, "", return_slot);
-		//}
-		IR.push_back(newReturn);
-		newReturn.Clear();
-	}
-	else
-	{
-		//store stack value in tmp
-		typename std::map<std::string, SymbolTableEntry *>::iterator map_it = funcTable->table.find(location);
-		std::string var_location = "";
-		std::string temp_location = "";
-
-		if(map_it != funcTable->table.end())
+		//don't return shit to main, it only causes issues
+	}else{
+		if(this->Right == NULL)
 		{
-			//found entry in func scope, it's a var
-			var_location += "$";
-			var_location += std::to_string(funcTable->table.at(location)->slot);
+			//empty return
+			return "";
+		}
+		else if(this->Right->Type == ASTNodeType::LITERAL)
+		{
+			return_slot += std::to_string(funcTable->numParams + 2);	//= num params + ret pc + ret val offsets
+			newReturn.Fill("STOREI", location, "", return_slot);
+			IR.push_back(newReturn);
+			newReturn.Clear();
+		}
+		else
+		{
+			//store stack value in tmp
+			typename std::map<std::string, SymbolTableEntry *>::iterator map_it = funcTable->table.find(location);
+			std::string var_location = "";
+			std::string temp_location = "";
 
-			temp_location += "!T"+std::to_string(availableTemp);
+			if(map_it != funcTable->table.end())
+			{
+				//found entry in func scope, it's a var
+				var_location += "$";
+				var_location += std::to_string(funcTable->table.at(location)->slot);
 
-			if(isINTType){
-				newReturn.Fill("STOREI", var_location, "", temp_location);
-				availableTemp++;
+				currentReg = generateTemporary();
+				temp_location += "!T"+std::to_string(currentReg);
+
+				if(isINTType){
+					newReturn.Fill("STOREI", var_location, "", temp_location);
+				}else{
+					newReturn.Fill("STOREF", var_location, "", temp_location);
+				}
+				IR.push_back(newReturn);
+				newReturn.Clear();
 			}else{
-				newReturn.Fill("STOREF", var_location, "", temp_location);
-				availableTemp++;
+				//right result is a complex expression, stored in tmp
+				temp_location = location;
+			}
+
+			//store tmp in return slot
+			std::string return_location = "$";
+			return_location += std::to_string(funcTable->numParams + 2);
+			if(isINTType){
+				newReturn.Fill("STOREI", temp_location, "", return_location);
+			}else{
+				newReturn.Fill("STOREF", temp_location, "", return_location);
 			}
 			IR.push_back(newReturn);
 			newReturn.Clear();
-		}else{
-			//right result is a complex expression, stored in tmp
-			temp_location = location;
-		}
 
-		//store tmp in return slot
-		std::string return_location = "$";
-		return_location += std::to_string(funcTable->numParams + 2);
-		if(isINTType){
-			newReturn.Fill("STOREI", temp_location, "", return_location);
-			availableTemp++;
-		}else{
-			newReturn.Fill("STOREF", temp_location, "", return_location);
-			availableTemp++;
+			freeTemporary(temp_location);
 		}
-		IR.push_back(newReturn);
-		newReturn.Clear();
 	}
 	newReturn.Clear();
 	//add link and return
@@ -492,12 +394,8 @@ std::string ReturnNode::TO_IR(SymbolTable * funcTable){
 }
 
 std::string AssignNode::TO_IR(SymbolTable * funcTable){
-	//printf("FILE: %s, LINE: %d\n", __FILE__, __LINE__);
-
-	std::string idKey = this->Left->TO_IR(funcTable);
-	//SymbolTable * stackTop = ststack.top();
 	ThreeAC newAssign = ThreeAC();
-
+	std::string idKey = this->Left->TO_IR(funcTable);
 	std::string targetTmpy = this->Right->TO_IR(funcTable);
 
 	typename std::map<std::string, SymbolTableEntry *>::iterator map_it;
@@ -533,6 +431,7 @@ std::string AssignNode::TO_IR(SymbolTable * funcTable){
 		}
 		IR.push_back(newAssign);
 		newAssign.Clear();
+		freeTemporary(targetTmpy);
 	}
 	else if(this->Right->Type == ASTNodeType::VAR_REF)
 	{	
@@ -548,10 +447,8 @@ std::string AssignNode::TO_IR(SymbolTable * funcTable){
 			lookup_slot += targetTmpy;
 		}
 
-		//get a new tmpy
-		std::string tmp = "";
-		tmp += "!T"+std::to_string(availableTemp);
-		availableTemp++;
+		currentReg = generateTemporary();
+		std::string tmp = "!T"+std::to_string(currentReg);
 
 		//store right ref's stack slot into tmpy
 		if(isINTType){
@@ -559,6 +456,7 @@ std::string AssignNode::TO_IR(SymbolTable * funcTable){
 		}else{
 			newAssign.Fill("STOREF", lookup_slot, "", tmp);
 		}
+
 		IR.push_back(newAssign);
 		newAssign.Clear();
 
@@ -585,6 +483,7 @@ std::string AssignNode::TO_IR(SymbolTable * funcTable){
 		}
 		IR.push_back(newAssign);
 		newAssign.Clear();
+		freeTemporary(tmp);
 	}else{
 		//storing any type of expression on the right
 		//get lookup slot for left ref
@@ -608,14 +507,13 @@ std::string AssignNode::TO_IR(SymbolTable * funcTable){
 		}
 		IR.push_back(newAssign);
 		newAssign.Clear();
+		freeTemporary(targetTmpy);
 	}
 	
 	return "";
 }
 
 std::string IfNode::TO_IR(SymbolTable * funcTable){
-	//printf("FILE: %s, LINE: %d\n", __FILE__, __LINE__);
-	//std::cout << "IfNode->TO_IR()" << std::endl;
 	std::string else_start = "ELSE_" + std::to_string(this->blockID);
 	std::string else_end = "END_IF_ELSE_" + std::to_string(this->blockID);
 
@@ -667,11 +565,11 @@ std::string IfNode::TO_IR(SymbolTable * funcTable){
 	{
 		ThreeAC putVarInReg = ThreeAC();
 		if(isINTType){
-			putVarInReg.Fill("STOREI", rightLocation, "", "!T"+std::to_string(availableTemp));
-			availableTemp++;
+			currentReg = generateTemporary();
+			putVarInReg.Fill("STOREI", rightLocation, "", "!T"+std::to_string(currentReg));
 		}else{
-			putVarInReg.Fill("STOREF", rightLocation, "", "!T"+std::to_string(availableTemp));
-			availableTemp++;
+			currentReg = generateTemporary();
+			putVarInReg.Fill("STOREF", rightLocation, "", "!T"+std::to_string(currentReg));
 		}
 
 		rightRef += putVarInReg.result;
@@ -747,40 +645,26 @@ std::string IfNode::TO_IR(SymbolTable * funcTable){
 	for(auto stmt : stmt_nodes){
 		if(stmt)
 		{	
-			availableTemp = 0;
-			//std::cout << "if stmts->TO_IR()" << std::endl;
+			clearLockArray();
 			stmt->TO_IR(funcTable);
 		}
+	}	
+
+	toInsert.Fill("JUMP", else_end, "", "");
+	IR.push_back(toInsert);
+	toInsert.Clear();
+
+	toInsert.Fill("LABEL", else_start, "", "");
+	IR.push_back(toInsert);
+	toInsert.Clear();
+
+	if(else_node){
+		else_node->TO_IR(funcTable);
 	}
 
-	
-
-	//std::cout << "checking if there's an else node\n";
-	//std::cout << else_node << std::endl;	
-	//if(else_node)
-	//{
-		//std::cout << "there was an else node!\n";
-
-		toInsert.Fill("JUMP", else_end, "", "");
-		IR.push_back(toInsert);
-		toInsert.Clear();
-
-		toInsert.Fill("LABEL", else_start, "", "");
-		IR.push_back(toInsert);
-		toInsert.Clear();
-		if(else_node){
-			else_node->TO_IR(funcTable);
-		}
-	//}
-	//std::cout << "got past else node!\n";
-
-	//if(else_node){
-		toInsert.Fill("LABEL", else_end, "", "");
-		IR.push_back(toInsert);
-		toInsert.Clear();
-	//}
-
-	//std::cout << "end of IfNode->TO_IR()\n";
+	toInsert.Fill("LABEL", else_end, "", "");
+	IR.push_back(toInsert);
+	toInsert.Clear();
 
 	return "";
 }
@@ -792,7 +676,7 @@ std::string ElseNode::TO_IR(SymbolTable * funcTable){
 	for(auto stmt : this->stmt_nodes){
 		if(stmt)
 		{
-			availableTemp = 0;
+			clearLockArray();
 			//std::cout << "else stmt->TO_IR()" << std::endl;
 			stmt->TO_IR(funcTable);
 		}
@@ -850,11 +734,11 @@ std::string WhileNode::TO_IR(SymbolTable * funcTable){
 	{
 		ThreeAC putVarInReg = ThreeAC();
 		if(isINTType){
-			putVarInReg.Fill("STOREI", return_slot_right, "", "!T"+std::to_string(availableTemp));
-			availableTemp++;
+			currentReg = generateTemporary();
+			putVarInReg.Fill("STOREI", return_slot_right, "", "!T"+std::to_string(currentReg));
 		}else{
-			putVarInReg.Fill("STOREF", return_slot_right, "", "!T"+std::to_string(availableTemp));
-			availableTemp++;
+			currentReg = generateTemporary();
+			putVarInReg.Fill("STOREF", return_slot_right, "", "!T"+std::to_string(currentReg));
 		}
 
 		rightRef = putVarInReg.result;
@@ -973,13 +857,14 @@ std::string WhileNode::TO_IR(SymbolTable * funcTable){
 		}
 	}
 
+	freeTemporary(return_slot_left);
+
 	IR.push_back(*branch_stmt);
 
 	for(auto stmt : stmt_nodes){
 		if(stmt)
 		{
-			availableTemp = 0;
-			//std::cout << "while stmt->TO_IR()" << std::endl;
+			clearLockArray();
 			stmt->TO_IR(funcTable);
 		}
 	}
@@ -1089,14 +974,9 @@ std::string ReadNode::TO_IR(SymbolTable * funcTable){
 }
 
 std::string AddExprNode::TO_IR(SymbolTable * funcTable){
-	//printf("FILE: %s, LINE: %d\n", __FILE__, __LINE__);
-
+	ThreeAC newAdd = ThreeAC();
 	std::string leftTmpy = this->Left->TO_IR(funcTable);
 	std::string rightTmpy = this->Right->TO_IR(funcTable);
-
-	ThreeAC newAdd = ThreeAC();
-
-	//SymbolTable * stackTop = ststack.top();
 
 	if(this->Left->Type == ASTNodeType::VAR_REF)
 	{
@@ -1151,6 +1031,7 @@ std::string AddExprNode::TO_IR(SymbolTable * funcTable){
 		}
 		else
 		{
+			//global or temp
 			left_slot += leftTmpy;
 		}
 	}
@@ -1167,6 +1048,7 @@ std::string AddExprNode::TO_IR(SymbolTable * funcTable){
 		}
 		else
 		{
+			//global or temp
 			right_slot += rightTmpy;
 		}
 	}
@@ -1174,37 +1056,33 @@ std::string AddExprNode::TO_IR(SymbolTable * funcTable){
 	if(this->add_op == "+")
 	{
 		if(isINTType){
-			newAdd.Fill("ADDI", left_slot, right_slot, "!T"+std::to_string(availableTemp));
-			availableTemp++;
+			currentReg = generateTemporary();
+			newAdd.Fill("ADDI", left_slot, right_slot, "!T"+std::to_string(currentReg));
 		}else{
-			newAdd.Fill("ADDF", left_slot, right_slot, "!T"+std::to_string(availableTemp));
-			availableTemp++;
+			currentReg = generateTemporary();
+			newAdd.Fill("ADDF", left_slot, right_slot, "!T"+std::to_string(currentReg));
 		}
 	}else{
 		if(isINTType){
-			newAdd.Fill("SUBI", left_slot, right_slot, "!T"+std::to_string(availableTemp));
-			availableTemp++;
+			currentReg = generateTemporary();
+			newAdd.Fill("SUBI", left_slot, right_slot, "!T"+std::to_string(currentReg));
 		}else{
-			newAdd.Fill("SUBF", left_slot, right_slot, "!T"+std::to_string(availableTemp));
-			availableTemp++;
+			currentReg = generateTemporary();
+			newAdd.Fill("SUBF", left_slot, right_slot, "!T"+std::to_string(currentReg));
 		}
 	}
 
 	IR.push_back(newAdd);
-	//newAdd.Clear();
 
-	//this->printTree();
+	freeTemporary(left_slot);
+
 	return newAdd.result;
 }
 
 std::string MulExprNode::TO_IR(SymbolTable * funcTable){
-	//printf("FILE: %s, LINE: %d\n", __FILE__, __LINE__);
+	ThreeAC newMult = ThreeAC();
 	std::string leftTmpry = this->Left->TO_IR(funcTable);
 	std::string rightTmpry = this->Right->TO_IR(funcTable);
-
-	ThreeAC newMult = ThreeAC();
-
-	//SymbolTable * stackTop = ststack.top();
 
 	if(this->Left->Type == ASTNodeType::VAR_REF)
 	{
@@ -1282,36 +1160,37 @@ std::string MulExprNode::TO_IR(SymbolTable * funcTable){
 	if(this->mul_op == "*")
 	{
 		if(isINTType){
-			newMult.Fill("MULI", left_slot, right_slot, "!T"+std::to_string(availableTemp));
-			availableTemp++;
+			currentReg = generateTemporary();
+			newMult.Fill("MULI", left_slot, right_slot, "!T"+std::to_string(currentReg));
 		}else{
-			newMult.Fill("MULF", left_slot, right_slot, "!T"+std::to_string(availableTemp));
-			availableTemp++;
+			currentReg = generateTemporary();
+			newMult.Fill("MULF", left_slot, right_slot, "!T"+std::to_string(currentReg));
 		}
 	}else{
 		if(isINTType){
-			newMult.Fill("DIVI", left_slot, right_slot, "!T"+std::to_string(availableTemp));
-			availableTemp++;
+			currentReg = generateTemporary();
+			newMult.Fill("DIVI", left_slot, right_slot, "!T"+std::to_string(currentReg));
 		}else{
-			newMult.Fill("DIVF", left_slot, right_slot, "!T"+std::to_string(availableTemp));
-			availableTemp++;
+			currentReg = generateTemporary();
+			newMult.Fill("DIVF", left_slot, right_slot, "!T"+std::to_string(currentReg));
 		}
 	}
 
 	IR.push_back(newMult);
 
+	freeTemporary(left_slot);
+
 	return newMult.result;
 }
 
 std::string LiteralNode::TO_IR(SymbolTable * funcTable){
-	//printf("FILE: %s, LINE: %d\n", __FILE__, __LINE__);
 	ThreeAC newLit = ThreeAC();
 	if(this->litType == LiteralType::isINT){
-		newLit.Fill("STOREI", this->val, "", "!T"+std::to_string(availableTemp));
-		availableTemp++;
+		currentReg = generateTemporary();
+		newLit.Fill("STOREI", this->val, "", "!T"+std::to_string(currentReg));
 	}else{
-		newLit.Fill("STOREF", this->val, "", "!T"+std::to_string(availableTemp));
-		availableTemp++;
+		currentReg = generateTemporary();
+		newLit.Fill("STOREF", this->val, "", "!T"+std::to_string(currentReg));
 	}
 	IR.push_back(newLit);
 
@@ -1319,28 +1198,5 @@ std::string LiteralNode::TO_IR(SymbolTable * funcTable){
 }
 
 std::string VarRefNode::TO_IR(SymbolTable * funcTable){
-	//printf("FILE: %s, LINE: %d\n", __FILE__, __LINE__);
-
-	/*ThreeAC putVarInReg = ThreeAC();
-	if(isINTType){
-		putVarInReg.Fill("STOREI", ident, "", "!T"+std::to_string(availableTemp));
-		availableTemp++;
-	}else{
-		putVarInReg.Fill("STOREF", ident, "", "!T"+std::to_string(availableTemp));
-		availableTemp++;
-	}
-
-	IR.push_back(putVarInReg);
-	putVarInReg.Clear();*/
-	/*typename std::map<std::string, SymbolTableEntry *>::iterator map_it = funcTable->table.find(this->ident);
-	std::string return_slot = "";
-	if(map_it != funcTable->table.end())
-	{
-		//found entry in func scope
-		return_slot += "$";
-		return_slot += std::to_string(funcTable->table.at(this->ident)->slot);
-		return return_slot;
-	}*/
-
 	return this->ident;
 }
