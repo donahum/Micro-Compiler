@@ -197,34 +197,13 @@ void ElseNode::copyStmtList(std::vector<ASTNode *> stmt_nodes_supplied)
 }
 
 std::string FuncNode::TO_IR(SymbolTable * funcTable){
-	//printf("FILE: %s, LINE: %d\n", __FILE__, __LINE__);
-
 	std::string funcName = this->name;
-
-    /*toInsert.Fill("PUSH", "", "", "");
-	IR.push_back(toInsert);
-	toInsert.Clear();
-
-	toInsert.Fill("PUSHREGS", "", "", "");
-	IR.push_back(toInsert);
-	toInsert.Clear();*/
-
-	/*toInsert.Fill("JSR", "FUNC_"+funcName, "", "");
-	IR.push_back(toInsert);
-	toInsert.Clear();*/
-
-	/*toInsert.Fill("HALT", "", "", "");
-	IR.push_back(toInsert);
-	toInsert.Clear();*/
 
 	toInsert.Fill("LABEL", "FUNC_"+funcName, "", "");
 	IR.push_back(toInsert);
 	toInsert.Clear();
 
 	std::string linkNum = "";
-	//std::cout << std::to_string(funcTable->numLocals) << std::endl;
-	//funcTable->printST();
-	//printf("Link num is %d", this->table->numLocals);
 	linkNum += std::to_string(this->table->numLocals);
 
 	toInsert.Fill("LINK", linkNum, "", "");
@@ -234,9 +213,7 @@ std::string FuncNode::TO_IR(SymbolTable * funcTable){
 	for(auto stmt : *node_list){
 		if(stmt)
 		{
-			//availableTemp = 0;
 			clearLockArray();
-			//std::cout << "Func stmt->TO_IR()" << std::endl;
 			stmt->TO_IR(this->table);
 		}
 	}
@@ -249,30 +226,45 @@ std::string FuncNode::TO_IR(SymbolTable * funcTable){
 	IR.push_back(toInsert);
 	toInsert.Clear();
 
-	//std::cout << funcName << std::endl;
-
 	return "";
 }
 
 std::string CallNode::TO_IR(SymbolTable * funcTable){
 	ThreeAC pushParams = ThreeAC();
 
-	//push return slot onto stack
+	std::vector<int> preserveSet {0, 0, 0, 0};
+
 	typename std::map<std::string, SymbolTableEntry *>::iterator map_it;
 	std::string var_location = "";
 
+	//push return slot onto stack
 	pushParams.Fill("PUSH", "", "", "");
 	IR.push_back(pushParams);
 	pushParams.Clear();
 
+	//save registers on the stack, before the return slot, arguments, and jsr
+	for(int i = 0; i < 4; i++)
+	{
+		//save regs that are still live
+		preserveSet[i] = lockArray[i];
+		if(lockArray[i] == 1)
+		{
+			//only push if live
+			pushParams.Fill("PUSH", "!T"+std::to_string(i), "", "");
+			IR.push_back(pushParams);
+			pushParams.Clear();
+		}
+		//clear this for the next function to work with
+		lockArray[i] = 0;
+	}
+
 	//push function parameters onto stack
-	for(std::vector<ASTNode *>::reverse_iterator expr = node_list->rbegin();	expr != node_list->rend();	++expr){
 	//for(auto expr : *node_list){
+	for(std::vector<ASTNode *>::reverse_iterator expr = node_list->rbegin();	expr != node_list->rend();	++expr)
+	{
 		var_location = "";
 		pushParams.Clear();
 		std::string param = (*expr)->TO_IR(funcTable);
-
-		//std::cout << param << std::endl;
 
 		map_it = funcTable->table.find(param);
 		if(map_it != funcTable->table.end())
@@ -299,6 +291,19 @@ std::string CallNode::TO_IR(SymbolTable * funcTable){
 		pushParams.Clear();
 		pushParams.Fill("POP", "", "", "");
 		IR.push_back(pushParams);
+	}
+
+	//pop saved regs
+	for(int i = 3; i >= 0; i--)
+	{
+		if(preserveSet[i] == 1)
+		{
+			pushParams.Clear();
+			pushParams.Fill("POP", "!T"+std::to_string(i), "", "");
+			IR.push_back(pushParams);
+		}
+		lockArray[i] = preserveSet[i];
+		preserveSet[i] = 0;
 	}
 
 	//pop return value off stack into reg
@@ -485,6 +490,7 @@ std::string AssignNode::TO_IR(SymbolTable * funcTable){
 		newAssign.Clear();
 		freeTemporary(tmp);
 	}else{
+		std::cout << ";LockArray: " << lockArray[0] << lockArray[1] << lockArray[2] << lockArray[3] << std::endl;
 		//storing any type of expression on the right
 		//get lookup slot for left ref
 		map_it = funcTable->table.find(idKey);
