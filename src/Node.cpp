@@ -299,7 +299,7 @@ std::string CallNode::TO_IR(SymbolTable * funcTable){
 		if(preserveSet[i] == 1)
 		{
 			pushParams.Clear();
-			pushParams.Fill("POP", "!T"+std::to_string(i), "", "");
+			pushParams.Fill("POP", "", "", "!T"+std::to_string(i));
 			IR.push_back(pushParams);
 		}
 		lockArray[i] = preserveSet[i];
@@ -982,8 +982,24 @@ std::string ReadNode::TO_IR(SymbolTable * funcTable){
 std::string AddExprNode::TO_IR(SymbolTable * funcTable){
 	ThreeAC newAdd = ThreeAC();
 	std::string leftTmpy = this->Left->TO_IR(funcTable);
+
+	if(this->Right->Type == ASTNodeType::CALL_EXPR)
+	{
+		newAdd.Fill("PUSH", leftTmpy, "", "");
+		IR.push_back(newAdd);
+		newAdd.Clear();
+		freeTemporary(leftTmpy);
+	}
+
 	std::string rightTmpy = this->Right->TO_IR(funcTable);
 
+	if(this->Right->Type == ASTNodeType::CALL_EXPR)
+	{
+		currentReg = generateTemporary();
+		leftTmpy = "!T"+std::to_string(currentReg);
+		newAdd.Fill("POP", "", "", leftTmpy);
+	}
+	
 	if(this->Left->Type == ASTNodeType::VAR_REF)
 	{
 		if(funcTable->getTypeFromID( this->Left->TO_IR(funcTable)) == "INT")
@@ -1081,6 +1097,7 @@ std::string AddExprNode::TO_IR(SymbolTable * funcTable){
 	IR.push_back(newAdd);
 
 	freeTemporary(left_slot);
+	freeTemporary(right_slot);
 
 	return newAdd.result;
 }
@@ -1088,7 +1105,23 @@ std::string AddExprNode::TO_IR(SymbolTable * funcTable){
 std::string MulExprNode::TO_IR(SymbolTable * funcTable){
 	ThreeAC newMult = ThreeAC();
 	std::string leftTmpry = this->Left->TO_IR(funcTable);
+
+	if(this->Right->Type == ASTNodeType::CALL_EXPR)
+	{
+		newMult.Fill("PUSH", leftTmpry, "", "");
+		IR.push_back(newMult);
+		newMult.Clear();
+		freeTemporary(leftTmpry);
+	}
+
 	std::string rightTmpry = this->Right->TO_IR(funcTable);
+
+	if(this->Right->Type == ASTNodeType::CALL_EXPR)
+	{
+		currentReg = generateTemporary();
+		leftTmpry = "!T"+std::to_string(currentReg);
+		newMult.Fill("POP", "", "", leftTmpry);
+	}
 
 	if(this->Left->Type == ASTNodeType::VAR_REF)
 	{
@@ -1185,6 +1218,7 @@ std::string MulExprNode::TO_IR(SymbolTable * funcTable){
 	IR.push_back(newMult);
 
 	freeTemporary(left_slot);
+	freeTemporary(right_slot);
 
 	return newMult.result;
 }
